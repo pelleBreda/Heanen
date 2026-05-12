@@ -255,7 +255,19 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
   </div>
 </header>
 
-<div class="screen active" id="setupScreen">
+<div class="screen active" id="lockScreen">
+  <div class="setup-card" style="text-align:center;">
+    <h2>Scorekaart De Haenen</h2>
+    <p>Voer de toegangscode in</p>
+    <div class="form-group">
+      <input type="password" id="lockCode" placeholder="Toegangscode" autocomplete="off" style="text-align:center; font-size:1.2rem; letter-spacing:2px;">
+    </div>
+    <button class="btn-start" id="btnUnlock">Ga verder</button>
+    <div id="lockError" style="color:var(--par5); font-size:0.8rem; margin-top:12px; display:none;">Ongeldige code</div>
+  </div>
+</div>
+
+<div class="screen" id="setupScreen">
   <div class="setup-card">
     <h2>Scorekaart De Haenen</h2>
     <p>Stel je ronde in en ga spelen</p>
@@ -785,11 +797,41 @@ function initGpsMap() {
   }
 }
 
+// --- Lock screen ---
+const ACCESS_CODE = 'PELLE!';
+const LOCK_KEY = 'haenen_unlocked';
+
+function checkUnlocked() {
+  return sessionStorage.getItem(LOCK_KEY) === '1';
+}
+
+document.getElementById('btnUnlock').onclick = () => {
+  const input = document.getElementById('lockCode').value.trim();
+  if (input === ACCESS_CODE) {
+    sessionStorage.setItem(LOCK_KEY, '1');
+    initApp();
+  } else {
+    document.getElementById('lockError').style.display = 'block';
+  }
+};
+
+document.getElementById('lockCode').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btnUnlock').click();
+});
+
+function initApp() {
+  if (loadLocal() && config) {
+    startRound();
+  } else {
+    showScreen('setupScreen');
+  }
+}
+
 // --- Init ---
-if (loadLocal() && config) {
-  startRound();
+if (checkUnlocked()) {
+  initApp();
 } else {
-  showScreen('setupScreen');
+  showScreen('lockScreen');
 }
 </script>
 </body>
