@@ -99,7 +99,11 @@ function initGpsMap() {
     center: initCenter,
     zoom: 18,
     zoomControl: true,
-    attributionControl: false
+    attributionControl: false,
+    rotate: true,
+    touchRotate: true,
+    rotateControl: { closeOnZeroBearing: false, position: 'topleft' },
+    bearing: 0
   });
 
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
