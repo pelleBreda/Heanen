@@ -392,6 +392,252 @@ header h1 {
 }
 .hole-tip strong { color: var(--tox-blue); }
 
+/* ---------- Setup ---------- */
+.player-count-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.count-btn {
+  background: var(--tox-cream);
+  border: 2px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--tox-text);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.count-btn.active {
+  background: var(--tox-blue);
+  color: #fff;
+  border-color: var(--tox-blue-dark);
+}
+
+.player-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.player-input:last-child { margin-bottom: 0; }
+.player-input .badge {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--tox-blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.player-input input {
+  flex: 1;
+  padding: 12px 14px;
+  font-size: 1rem;
+  border: 1px solid var(--tox-line);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  background: var(--tox-cream);
+}
+.player-input input:focus {
+  outline: 2px solid var(--tox-blue);
+  border-color: var(--tox-blue);
+  background: #fff;
+}
+
+.btn-primary-large {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: var(--tox-blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 3px 10px rgba(14,58,92,0.25);
+  margin-top: 8px;
+}
+.btn-primary-large:active {
+  background: var(--tox-blue-dark);
+  transform: scale(0.98);
+}
+
+/* ---------- Team card on start ---------- */
+.card-team .team-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.team-label {
+  font-size: 0.7rem;
+  color: var(--tox-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.team-names {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--tox-blue);
+  margin-top: 2px;
+}
+.btn-edit-team {
+  background: var(--tox-cream);
+  border: 1px solid var(--tox-line);
+  color: var(--tox-blue);
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  touch-action: manipulation;
+}
+
+.btn-result {
+  width: 100%;
+  background: rgba(255,255,255,0.95);
+  color: var(--tox-blue);
+  border: none;
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  margin-bottom: 8px;
+}
+.btn-result:active { background: #fff; transform: scale(0.98); }
+
+/* ---------- Drives chips ---------- */
+.drives-card { padding: 14px 16px; }
+.drives-title {
+  font-size: 0.85rem;
+  color: var(--tox-blue);
+  font-weight: 700;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.drives-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.drive-chip {
+  flex: 1 1 calc(50% - 4px);
+  min-width: 0;
+  background: var(--tox-cream);
+  border: 2px solid transparent;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--tox-text);
+  cursor: pointer;
+  text-align: center;
+  touch-action: manipulation;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.drive-chip.selected {
+  background: var(--tox-blue);
+  color: #fff;
+  border-color: var(--tox-blue-dark);
+}
+.drive-chip .count {
+  display: inline-block;
+  background: rgba(0,0,0,0.1);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  margin-left: 6px;
+  font-weight: 700;
+}
+.drive-chip.selected .count { background: rgba(255,255,255,0.25); }
+.drives-hint {
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--tox-muted);
+  font-style: italic;
+}
+
+/* ---------- Result screen ---------- */
+.card-result-top {
+  background: linear-gradient(135deg, var(--tox-blue) 0%, var(--tox-blue-light) 100%);
+  color: #fff;
+  text-align: center;
+  padding: 24px;
+}
+.result-strokes { font-size: 3rem; font-weight: 900; line-height: 1; }
+.result-vs-par {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-top: 6px;
+  opacity: 0.95;
+}
+.result-vs-par.under { color: #A5D6A7; }
+.result-vs-par.over  { color: #FFAB91; }
+.result-par-line {
+  font-size: 0.85rem;
+  margin-top: 10px;
+  opacity: 0.85;
+}
+
+.result-drives-note {
+  font-size: 0.82rem;
+  color: var(--tox-muted);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+.result-drive-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--tox-cream);
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+.result-drive-row:last-child { margin-bottom: 0; }
+.result-drive-row .name { font-weight: 700; color: var(--tox-text); }
+.result-drive-row .drive-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--tox-blue);
+  color: #fff;
+}
+.result-drive-row.warn { background: #FFEBEE; }
+.result-drive-row.warn .drive-count { background: var(--tee-red); }
+
+.result-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.result-table th, .result-table td {
+  padding: 8px 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--tox-line);
+}
+.result-table th {
+  font-size: 0.75rem;
+  color: var(--tox-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 700;
+}
+.result-table td:first-child, .result-table th:first-child { text-align: left; }
+.result-table .total-row { font-weight: 700; background: var(--tox-cream); }
+.result-table .total-row td { border-bottom: none; }
+.result-table .under-cell { color: #2E7D32; font-weight: 700; }
+.result-table .over-cell  { color: #C62828; font-weight: 700; }
+
 /* ---------- GPS afstandsmeter ---------- */
 .gps-card {
   background: var(--tox-card);

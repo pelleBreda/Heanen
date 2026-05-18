@@ -139,15 +139,29 @@ function initGpsMap() {
   }
 }
 
-// ===== Score state =====
-const STORAGE_KEY = 'toxandria-scores-v1';
-let scores = {};
-try {
-  scores = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-} catch (e) { scores = {}; }
+// ===== Persistente state =====
+const STORAGE_KEY = 'toxandria-state-v2';
 
-function saveScores() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+function loadState() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return {
+      players: Array.isArray(raw.players) ? raw.players : null,
+      scores: raw.scores && typeof raw.scores === 'object' ? raw.scores : {},
+      drives: raw.drives && typeof raw.drives === 'object' ? raw.drives : {}
+    };
+  } catch (e) {
+    return { players: null, scores: {}, drives: {} };
+  }
+}
+
+let state = loadState();
+let scores = state.scores;
+let drives = state.drives;  // {hole: playerIndex}
+let players = state.players; // null als nog niet geconfigureerd
+
+function saveAll() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ players, scores, drives }));
 }
 
 function diffLabel(score, par) {
@@ -161,19 +175,83 @@ function diffLabel(score, par) {
 let currentHole = 1;
 
 const $ = (sel) => document.querySelector(sel);
+const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 const screens = {
+  setup: $('#screen-setup'),
   start: $('#screen-start'),
   hole: $('#screen-hole'),
+  result: $('#screen-result'),
   map: $('#screen-map'),
 };
 
 function showScreen(name) {
-  Object.values(screens).forEach(s => s.classList.remove('active'));
-  Object.values(screens).forEach(s => s.classList.add('hidden'));
+  Object.values(screens).forEach(s => { s.classList.remove('active'); s.classList.add('hidden'); });
   screens[name].classList.remove('hidden');
   screens[name].classList.add('active');
-  $('#btn-back').classList.toggle('hidden', name === 'start');
+  $('#btn-back').classList.toggle('hidden', name === 'start' || name === 'setup');
   window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+// ===== Setup scherm =====
+let setupCount = 4;
+let setupNames = ['', '', '', ''];
+
+function renderSetup() {
+  if (players) {
+    setupCount = players.length;
+    setupNames = players.slice();
+    while (setupNames.length < 4) setupNames.push('');
+  } else {
+    setupNames = ['Pelle', '', '', ''];
+  }
+  $$('.count-btn').forEach(b => {
+    const c = parseInt(b.dataset.count, 10);
+    b.classList.toggle('active', c === setupCount);
+  });
+  renderPlayerInputs();
+}
+
+function renderPlayerInputs() {
+  const box = $('#player-inputs');
+  box.innerHTML = '';
+  for (let i = 0; i < setupCount; i++) {
+    const row = document.createElement('div');
+    row.className = 'player-input';
+    row.innerHTML = `
+      <div class="badge">${i + 1}</div>
+      <input type="text" placeholder="Naam speler ${i + 1}" value="${setupNames[i] || ''}" maxlength="20" autocomplete="off">
+    `;
+    row.querySelector('input').addEventListener('input', e => {
+      setupNames[i] = e.target.value;
+    });
+    box.appendChild(row);
+  }
+}
+
+function startRoundFromSetup() {
+  const validNames = [];
+  for (let i = 0; i < setupCount; i++) {
+    const n = (setupNames[i] || '').trim();
+    if (!n) {
+      alert(`Vul naam voor speler ${i + 1} in.`);
+      return;
+    }
+    validNames.push(n);
+  }
+  players = validNames;
+  saveAll();
+  renderTeamCard();
+  renderHoleGrid();
+  showScreen('start');
+}
+
+// ===== Team card =====
+function renderTeamCard() {
+  if (!players) {
+    $('#team-names').textContent = '—';
+    return;
+  }
+  $('#team-names').textContent = players.join(' · ');
 }
 
 function renderHoleGrid() {
@@ -213,7 +291,7 @@ function renderTotals() {
       parSum += h.par;
     }
   });
-  $('#total-played').textContent = `${played} / 18`;
+  $('#total-played').textContent = `${played} / 9`;
   $('#total-strokes').textContent = strokes;
   const totalEl = $('#total-vs-par');
   totalEl.classList.remove('under', 'over');
@@ -225,6 +303,7 @@ function renderTotals() {
     else if (d < 0) { totalEl.textContent = d.toString(); totalEl.classList.add('under'); }
     else { totalEl.textContent = '+' + d; totalEl.classList.add('over'); }
   }
+  $('#btn-result').style.display = played > 0 ? 'block' : 'none';
 }
 
 function renderScoreCounter() {
@@ -248,22 +327,56 @@ function adjustScore(delta) {
   const h = HOLES.find(x => x.n === currentHole);
   let cur = scores[h.n];
   if (cur == null) {
-    cur = delta > 0 ? h.par : h.par;
+    cur = h.par;
   } else {
     cur += delta;
   }
   if (cur < 1) cur = 1;
   if (cur > 15) cur = 15;
   scores[h.n] = cur;
-  saveScores();
+  saveAll();
   renderScoreCounter();
 }
 
 function resetAllScores() {
-  if (!confirm('Alle scores wissen?')) return;
+  if (!confirm('Alle scores én drives wissen?')) return;
   scores = {};
-  saveScores();
+  drives = {};
+  saveAll();
   renderHoleGrid();
+}
+
+// ===== Drives picker =====
+function renderDrivesChips() {
+  const box = $('#drives-chips');
+  const hint = $('#drives-hint');
+  box.innerHTML = '';
+  if (!players || players.length === 0) {
+    hint.textContent = 'Stel eerst je flight in via "Aanpassen".';
+    return;
+  }
+  const counts = players.map((_, i) => Object.values(drives).filter(d => d === i).length);
+  players.forEach((name, idx) => {
+    const chip = document.createElement('button');
+    chip.className = 'drive-chip';
+    if (drives[currentHole] === idx) chip.classList.add('selected');
+    chip.innerHTML = `${name} <span class="count">${counts[idx]}</span>`;
+    chip.addEventListener('click', () => {
+      if (drives[currentHole] === idx) {
+        delete drives[currentHole];
+      } else {
+        drives[currentHole] = idx;
+      }
+      saveAll();
+      renderDrivesChips();
+    });
+    box.appendChild(chip);
+  });
+  if (drives[currentHole] != null) {
+    hint.textContent = `Drive van ${players[drives[currentHole]]} gekozen.`;
+  } else {
+    hint.textContent = 'Tik op een speler.';
+  }
 }
 
 function openHole(n) {
@@ -295,16 +408,91 @@ function openHole(n) {
   $('#hole-tip').innerHTML = `<strong>Tip:</strong> ${h.tip}`;
 
   renderScoreCounter();
+  renderDrivesChips();
   showScreen('hole');
   setTimeout(initGpsMap, 60);
 }
 
+// ===== Resultaat =====
+function renderResult() {
+  const playedHoles = HOLES.filter(h => scores[h.n] != null);
+  const strokes = playedHoles.reduce((s, h) => s + scores[h.n], 0);
+  const parSum = playedHoles.reduce((s, h) => s + h.par, 0);
+  const d = strokes - parSum;
+
+  $('#result-sub').textContent = playedHoles.length === 0
+    ? 'Nog geen holes gespeeld'
+    : `${playedHoles.length} ${playedHoles.length === 1 ? 'hole' : 'holes'} gespeeld`;
+  $('#result-strokes').textContent = strokes;
+  const vp = $('#result-vs-par');
+  vp.classList.remove('under', 'over');
+  if (playedHoles.length === 0) vp.textContent = '—';
+  else if (d === 0) vp.textContent = 'Par';
+  else if (d < 0) { vp.textContent = d.toString(); vp.classList.add('under'); }
+  else { vp.textContent = '+' + d; vp.classList.add('over'); }
+  $('#result-par-line').textContent = `Par van gespeelde holes: ${parSum}`;
+
+  // Drives per speler (alleen gespeelde holes)
+  const drivesBox = $('#result-drives');
+  drivesBox.innerHTML = '';
+  if (!players) {
+    drivesBox.innerHTML = '<p class="result-drives-note">Geen flight ingesteld.</p>';
+  } else {
+    const minDrives = playedHoles.length >= 9 ? 2 : 1;
+    players.forEach((name, idx) => {
+      const count = playedHoles.filter(h => drives[h.n] === idx).length;
+      const row = document.createElement('div');
+      row.className = 'result-drive-row';
+      if (count < minDrives) row.classList.add('warn');
+      row.innerHTML = `<span class="name">${name}</span><span class="drive-count">${count} drive${count === 1 ? '' : 's'}</span>`;
+      drivesBox.appendChild(row);
+    });
+    const unassigned = playedHoles.filter(h => drives[h.n] == null).length;
+    if (unassigned > 0) {
+      const note = document.createElement('p');
+      note.className = 'result-drives-note';
+      note.style.marginTop = '12px';
+      note.textContent = `${unassigned} ${unassigned === 1 ? 'hole heeft' : 'holes hebben'} nog geen drive toegewezen.`;
+      drivesBox.appendChild(note);
+    }
+  }
+
+  // Tabel per hole
+  const table = $('#result-table');
+  if (playedHoles.length === 0) {
+    table.innerHTML = '<tr><td>Speel eerst een hole.</td></tr>';
+  } else {
+    let html = '<thead><tr><th>Hole</th><th>Par</th><th>Slagen</th><th>+/-</th><th>Drive</th></tr></thead><tbody>';
+    playedHoles.forEach(h => {
+      const s = scores[h.n];
+      const diff = s - h.par;
+      let diffCell = 'E';
+      let cls = '';
+      if (diff < 0) { diffCell = diff.toString(); cls = 'under-cell'; }
+      else if (diff > 0) { diffCell = '+' + diff; cls = 'over-cell'; }
+      const driveName = (drives[h.n] != null && players) ? players[drives[h.n]] : '—';
+      html += `<tr><td>${h.n}</td><td>${h.par}</td><td>${s}</td><td class="${cls}">${diffCell}</td><td>${driveName}</td></tr>`;
+    });
+    html += `<tr class="total-row"><td>Totaal</td><td>${parSum}</td><td>${strokes}</td><td colspan="2">${d === 0 ? 'Par' : (d > 0 ? '+' + d : d)}</td></tr>`;
+    html += '</tbody>';
+    table.innerHTML = html;
+  }
+
+  showScreen('result');
+}
+
 // ===== Event handlers =====
-$('#btn-back').addEventListener('click', () => {
+function gotoStart() {
   cleanupGps();
+  renderTeamCard();
   renderHoleGrid();
   showScreen('start');
-});
+}
+
+$('#btn-back').addEventListener('click', gotoStart);
+$('#btn-overview').addEventListener('click', gotoStart);
+$('#btn-back-from-result').addEventListener('click', gotoStart);
+$('#btn-result').addEventListener('click', renderResult);
 
 $('#score-plus').addEventListener('click', () => adjustScore(1));
 $('#score-minus').addEventListener('click', () => adjustScore(-1));
@@ -322,18 +510,43 @@ $('#next-hole').addEventListener('click', () => {
 
 $('#course-map').addEventListener('click', () => showScreen('map'));
 
-// Swipe op hole detail
+// Setup
+$$('.count-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    setupCount = parseInt(b.dataset.count, 10);
+    renderSetup();
+  });
+});
+$('#btn-start-round').addEventListener('click', startRoundFromSetup);
+$('#btn-edit-team').addEventListener('click', () => {
+  renderSetup();
+  showScreen('setup');
+});
+
+// Swipe op hole detail (alleen horizontaal, en niet op de GPS-kaart)
 let touchStartX = 0;
+let touchStartY = 0;
+let touchOnMap = false;
 screens.hole.addEventListener('touchstart', e => {
   touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+  touchOnMap = !!e.target.closest('#gps-map');
 }, { passive: true });
 screens.hole.addEventListener('touchend', e => {
+  if (touchOnMap) return;
   const dx = e.changedTouches[0].clientX - touchStartX;
-  if (Math.abs(dx) < 50) return;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  if (Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;
   if (dx < 0) $('#next-hole').click();
   else $('#prev-hole').click();
 }, { passive: true });
 
 // ===== Init =====
-renderHoleGrid();
-showScreen('start');
+if (!players) {
+  renderSetup();
+  showScreen('setup');
+} else {
+  renderTeamCard();
+  renderHoleGrid();
+  showScreen('start');
+}

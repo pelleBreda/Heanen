@@ -23,6 +23,29 @@
 
   <main>
 
+    <!-- Scherm 0: Setup (eerste keer / team aanpassen) -->
+    <section id="screen-setup" class="screen hidden">
+      <div class="hero">
+        <div class="hero-title">Welkom!</div>
+        <div class="hero-sub">Stel je flight in</div>
+      </div>
+
+      <div class="card">
+        <h2>Aantal spelers</h2>
+        <div class="player-count-toggle">
+          <button class="count-btn" data-count="3">3 spelers</button>
+          <button class="count-btn active" data-count="4">4 spelers</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Namen</h2>
+        <div id="player-inputs"></div>
+      </div>
+
+      <button id="btn-start-round" class="btn-primary-large">Start ronde</button>
+    </section>
+
     <!-- Scherm 1: Start / overzicht -->
     <section id="screen-start" class="screen active">
 
@@ -53,11 +76,21 @@
         <p class="map-caption">Tik op de kaart om groot te bekijken.</p>
       </div>
 
+      <div class="card card-team" id="team-card">
+        <div class="team-row">
+          <div>
+            <div class="team-label">Team</div>
+            <div class="team-names" id="team-names">&mdash;</div>
+          </div>
+          <button class="btn-edit-team" id="btn-edit-team">Aanpassen</button>
+        </div>
+      </div>
+
       <div class="card card-total">
         <div class="total-row">
           <div class="total-block">
-            <div class="total-label">Holes gespeeld</div>
-            <div class="total-value" id="total-played">0 / 18</div>
+            <div class="total-label">Holes</div>
+            <div class="total-value" id="total-played">0 / 9</div>
           </div>
           <div class="total-block">
             <div class="total-label">Slagen</div>
@@ -68,6 +101,7 @@
             <div class="total-value" id="total-vs-par">E</div>
           </div>
         </div>
+        <button id="btn-result" class="btn-result">Bekijk resultaat &rarr;</button>
         <button class="btn-reset" id="btn-reset">Scores wissen</button>
       </div>
 
@@ -121,6 +155,12 @@
         </div>
       </div>
 
+      <div class="card drives-card">
+        <div class="drives-title">Wie's drive is gespeeld?</div>
+        <div class="drives-chips" id="drives-chips"></div>
+        <div class="drives-hint" id="drives-hint">Tik op een speler.</div>
+      </div>
+
       <div class="gps-card">
         <div class="gps-card-title">GPS Afstandsmeter</div>
         <div class="gps-map-container">
@@ -133,9 +173,38 @@
         </div>
         <p class="gps-hint">Versleep de kaart, het kruis = de plek waarheen je meet.</p>
       </div>
+
+      <button id="btn-overview" class="btn-primary-large">&larr; Naar overzicht</button>
     </section>
 
-    <!-- Scherm 3: Map zoom -->
+    <!-- Scherm 3: Resultaat -->
+    <section id="screen-result" class="screen hidden">
+      <div class="hero">
+        <div class="hero-title">Resultaat</div>
+        <div class="hero-sub" id="result-sub">9 holes gespeeld</div>
+      </div>
+
+      <div class="card card-result-top">
+        <div class="result-strokes" id="result-strokes">0</div>
+        <div class="result-vs-par" id="result-vs-par">E</div>
+        <div class="result-par-line" id="result-par-line">Par van gespeelde holes: 0</div>
+      </div>
+
+      <div class="card">
+        <h2>Drives per speler</h2>
+        <p class="result-drives-note">Bij Texas Scramble moet elke speler minimaal <strong>2 drives</strong> bijdragen (over 9 holes).</p>
+        <div id="result-drives"></div>
+      </div>
+
+      <div class="card">
+        <h2>Per hole</h2>
+        <table class="result-table" id="result-table"></table>
+      </div>
+
+      <button class="btn-primary-large" id="btn-back-from-result">&larr; Terug</button>
+    </section>
+
+    <!-- Scherm 4: Map zoom -->
     <section id="screen-map" class="screen hidden">
       <img src="holes/coursemap.jpg" alt="Baan" class="zoom-map">
     </section>
