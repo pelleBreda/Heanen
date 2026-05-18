@@ -1,0 +1,492 @@
+:root {
+  --tox-blue: #0E3A5C;
+  --tox-blue-dark: #082640;
+  --tox-blue-light: #1B5687;
+  --tox-cream: #F4EFE3;
+  --tox-card: #FFFFFF;
+  --tox-text: #1A1A1A;
+  --tox-muted: #6B7280;
+  --tox-line: #E5E7EB;
+  --tee-white: #FFFFFF;
+  --tee-yellow: #FFD60A;
+  --tee-blue: #2196F3;
+  --tee-red: #E53935;
+  --tee-orange: #FB8C00;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --spacing: 16px;
+}
+
+* , *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--tox-cream);
+  color: var(--tox-text);
+  max-width: 480px;
+  margin: 0 auto;
+  padding-bottom: 32px;
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+/* ---------- Header ---------- */
+header {
+  background: var(--tox-blue);
+  color: #fff;
+  padding: 14px var(--spacing);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+header h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  flex: 1;
+}
+
+#header-sub {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  touch-action: manipulation;
+}
+
+.back-btn:active { background: rgba(255,255,255,0.18); }
+
+/* ---------- Screens ---------- */
+.screen { display: none; padding: var(--spacing); }
+.screen.active { display: block; }
+.hidden { display: none !important; }
+
+/* ---------- Hero ---------- */
+.hero {
+  background: linear-gradient(135deg, var(--tox-blue) 0%, var(--tox-blue-light) 100%);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 22px 18px;
+  text-align: center;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 14px rgba(14,58,92,0.25);
+}
+.hero-title { font-size: 1.9rem; font-weight: 800; letter-spacing: 0.5px; }
+.hero-sub { font-size: 0.95rem; opacity: 0.95; margin-top: 4px; font-weight: 500; }
+.hero-date { font-size: 0.85rem; opacity: 0.85; margin-top: 8px; }
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--tox-card);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.card h2 {
+  font-size: 1rem;
+  color: var(--tox-blue);
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.card-rules ul {
+  list-style: none;
+  padding: 0;
+}
+.card-rules li {
+  padding: 6px 0 6px 22px;
+  position: relative;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+.card-rules li::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tox-blue);
+}
+.rules-extra {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: var(--tox-cream);
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.4;
+  border-left: 3px solid var(--tox-blue);
+}
+
+/* ---------- Map ---------- */
+.card-map .course-map {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  display: block;
+  cursor: zoom-in;
+}
+.map-caption {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--tox-muted);
+  margin-top: 8px;
+}
+
+/* ---------- Hole grid ---------- */
+.section-heading {
+  font-size: 1rem;
+  color: var(--tox-blue);
+  margin: 6px 4px 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.hole-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.hole-card {
+  background: var(--tox-card);
+  border-radius: var(--radius-sm);
+  padding: 12px 8px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: transform 0.1s;
+  border: 2px solid transparent;
+}
+.hole-card:active { transform: scale(0.97); border-color: var(--tox-blue); }
+.hole-card .num { font-size: 1.4rem; font-weight: 800; color: var(--tox-blue); line-height: 1; }
+.hole-card .par { font-size: 0.78rem; color: var(--tox-muted); margin-top: 4px; }
+.hole-card .len { font-size: 0.78rem; color: var(--tox-text); margin-top: 2px; font-weight: 600; }
+.hole-card .si { font-size: 0.65rem; color: var(--tox-muted); margin-top: 2px; }
+.hole-card .score-pill {
+  margin-top: 6px;
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: var(--tox-blue);
+  color: #fff;
+}
+.hole-card .score-pill.under { background: #2E7D32; }
+.hole-card .score-pill.over  { background: #C62828; }
+.hole-card .score-pill.even  { background: var(--tox-blue-light); }
+
+/* ---------- Total card ---------- */
+.card-total {
+  background: linear-gradient(135deg, #1B5687 0%, #0E3A5C 100%);
+  color: #fff;
+}
+.total-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.total-block { text-align: center; }
+.total-label { font-size: 0.7rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.5px; }
+.total-value { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
+.total-value.under { color: #A5D6A7; }
+.total-value.over  { color: #FFAB91; }
+
+.btn-reset {
+  width: 100%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.btn-reset:active { background: rgba(255,255,255,0.25); }
+
+/* ---------- Score counter ---------- */
+.score-card {
+  background: var(--tox-card);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.score-par {
+  background: var(--tox-blue);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  text-align: center;
+  min-width: 68px;
+}
+.score-par-label { font-size: 0.7rem; opacity: 0.85; letter-spacing: 0.5px; }
+.score-par-value { font-size: 1.8rem; font-weight: 800; line-height: 1; margin-top: 2px; }
+
+.score-counter {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.score-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--tox-blue);
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.score-btn:active { transform: scale(0.94); background: var(--tox-blue-dark); }
+.score-btn.minus { background: #E0E0E0; color: var(--tox-text); }
+.score-btn.minus:active { background: #BDBDBD; }
+.score-display { text-align: center; flex: 1; }
+.score-value {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--tox-text);
+  line-height: 1;
+}
+.score-diff {
+  font-size: 0.85rem;
+  margin-top: 4px;
+  font-weight: 600;
+  color: var(--tox-muted);
+}
+.score-diff.under { color: #2E7D32; }
+.score-diff.over  { color: #C62828; }
+.score-diff.even  { color: var(--tox-blue); }
+
+/* SI hardness colour (1=hardest, 18=easiest) */
+.hole-card.hard { border-top: 3px solid var(--tee-red); }
+.hole-card.mid  { border-top: 3px solid var(--tee-yellow); }
+.hole-card.easy { border-top: 3px solid var(--tox-blue-light); }
+
+/* ---------- Info card ---------- */
+.card-info .info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--tox-line);
+  font-size: 0.9rem;
+}
+.card-info .info-row:last-child { border-bottom: none; }
+.card-info .info-row span:first-child { color: var(--tox-muted); }
+.card-info .info-row a {
+  color: var(--tox-blue);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer-note {
+  text-align: center;
+  color: var(--tox-muted);
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
+
+/* ---------- Hole detail screen ---------- */
+.hole-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--tox-blue);
+  color: #fff;
+  border-radius: var(--radius);
+  padding: 12px 8px;
+  margin-bottom: 14px;
+}
+.hole-header-center { text-align: center; flex: 1; }
+.hole-title { font-size: 1.4rem; font-weight: 800; }
+.hole-stats { font-size: 0.85rem; opacity: 0.9; margin-top: 2px; }
+.nav-arrow {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  font-size: 1rem;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.nav-arrow:active { background: rgba(255,255,255,0.3); }
+
+/* Tee grid */
+.tee-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.tee {
+  background: var(--tox-card);
+  border-radius: var(--radius-sm);
+  padding: 8px 4px;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border-top: 4px solid;
+}
+.tee .tee-len { font-size: 0.95rem; font-weight: 800; color: var(--tox-text); }
+.tee .tee-name { font-size: 0.65rem; color: var(--tox-muted); margin-top: 2px; text-transform: uppercase; }
+.tee.white  { border-color: #BBB; }
+.tee.yellow { border-color: var(--tee-yellow); }
+.tee.blue   { border-color: var(--tee-blue); }
+.tee.red    { border-color: var(--tee-red); }
+.tee.orange { border-color: var(--tee-orange); }
+
+.hole-image-wrap {
+  background: var(--tox-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.hole-image-wrap img {
+  width: 100%;
+  display: block;
+}
+
+.hole-tip {
+  background: var(--tox-card);
+  border-left: 4px solid var(--tox-blue);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+.hole-tip strong { color: var(--tox-blue); }
+
+/* ---------- GPS afstandsmeter ---------- */
+.gps-card {
+  background: var(--tox-card);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.gps-card-title {
+  padding: 12px 14px 8px;
+  font-size: 1rem;
+  color: var(--tox-blue);
+  font-weight: 700;
+}
+.gps-map-container {
+  position: relative;
+}
+#gps-map {
+  height: 320px;
+  background: #ddd;
+  z-index: 1;
+}
+.gps-crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 500;
+  pointer-events: none;
+}
+.gps-crosshair::before,
+.gps-crosshair::after {
+  content: '';
+  position: absolute;
+  background: #fff;
+  border-radius: 1px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.7);
+}
+.gps-crosshair::before {
+  width: 2px; height: 28px;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+.gps-crosshair::after {
+  width: 28px; height: 2px;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+.gps-crosshair-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #ff3b30;
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px rgba(255,59,48,0.8);
+}
+.gps-distance-overlay {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  background: rgba(0,0,0,0.72);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+}
+.gps-distance-overlay .dist-value {
+  font-size: 1.7rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.gps-distance-overlay .dist-unit {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+.gps-hint {
+  padding: 8px 14px 12px;
+  font-size: 0.75rem;
+  color: var(--tox-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+/* ---------- Zoom map ---------- */
+#screen-map { padding: 0; background: #000; min-height: 100vh; }
+.zoom-map {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+}

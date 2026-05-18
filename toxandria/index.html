@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Toxandria">
+  <meta name="theme-color" content="#0E3A5C">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <title>Toxandria - Texas Scramble</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header id="app-header">
+    <button id="btn-back" class="back-btn hidden" aria-label="Terug">&larr;</button>
+    <h1 id="header-title">Toxandria</h1>
+    <span id="header-sub">Texas Scramble</span>
+  </header>
+
+  <main>
+
+    <!-- Scherm 1: Start / overzicht -->
+    <section id="screen-start" class="screen active">
+
+      <div class="hero">
+        <div class="hero-title">Toxandria</div>
+        <div class="hero-sub">Texas Scramble Shotgun &middot; 9 holes</div>
+        <div class="hero-date">Woensdag 20 mei 2026</div>
+      </div>
+
+      <div class="card card-rules">
+        <h2>Texas Scramble &mdash; spelregels</h2>
+        <ul>
+          <li><strong>Iedereen slaat af</strong> op elke hole.</li>
+          <li>Kies de <strong>beste bal</strong>, daarna spelen alle teamleden vanaf die plek verder.</li>
+          <li>Op de green wordt vanaf <strong>dezelfde plek</strong> geput (max. 1 clublengte, niet dichterbij).</li>
+          <li>Markeer de gekozen bal v&oacute;&oacute;r de volgende slag.</li>
+          <li>&Eacute;&eacute;n score per team per hole.</li>
+        </ul>
+        <div class="rules-extra">
+          <strong>Shotgun start:</strong> alle teams starten gelijk op een verschillende hole.
+          Kijk op je startbriefje welke hole jouw beginhole is.
+        </div>
+      </div>
+
+      <div class="card card-map">
+        <h2>Baanoverzicht</h2>
+        <img src="holes/coursemap.jpg" alt="Toxandria baanoverzicht" class="course-map" id="course-map">
+        <p class="map-caption">Tik op de kaart om groot te bekijken.</p>
+      </div>
+
+      <div class="card card-total">
+        <div class="total-row">
+          <div class="total-block">
+            <div class="total-label">Holes gespeeld</div>
+            <div class="total-value" id="total-played">0 / 18</div>
+          </div>
+          <div class="total-block">
+            <div class="total-label">Slagen</div>
+            <div class="total-value" id="total-strokes">0</div>
+          </div>
+          <div class="total-block">
+            <div class="total-label">T.o.v. par</div>
+            <div class="total-value" id="total-vs-par">E</div>
+          </div>
+        </div>
+        <button class="btn-reset" id="btn-reset">Scores wissen</button>
+      </div>
+
+      <h2 class="section-heading">Holes</h2>
+      <div class="hole-grid" id="hole-grid"></div>
+
+      <div class="card card-info">
+        <h2>Praktisch</h2>
+        <div class="info-row"><span>Adres</span><span>Veenstraat 89, Molenschot</span></div>
+        <div class="info-row"><span>Telefoon</span><a href="tel:+31161411200">0161 411 200</a></div>
+        <div class="info-row"><span>WC op de baan</span><span>holes 5, 12 &amp; 16</span></div>
+        <div class="info-row"><span>Schuilhut</span><span>holes 7, 9, 12, 13 &amp; 16</span></div>
+        <div class="info-row"><span>Par totaal</span><span>72 (9-holes: par 35-37)</span></div>
+        <div class="info-row"><span>Lengte geel</span><span>5779 m (18 holes)</span></div>
+      </div>
+
+      <p class="footer-note">Veel succes vandaag! &#x26F3;</p>
+    </section>
+
+    <!-- Scherm 2: Hole detail -->
+    <section id="screen-hole" class="screen hidden">
+      <div class="hole-header-bar">
+        <button class="nav-arrow" id="prev-hole" aria-label="Vorige hole">&#x25C0;</button>
+        <div class="hole-header-center">
+          <div class="hole-title" id="hole-title">Hole 1</div>
+          <div class="hole-stats" id="hole-stats">Par 4 &middot; SI 15</div>
+        </div>
+        <button class="nav-arrow" id="next-hole" aria-label="Volgende hole">&#x25B6;</button>
+      </div>
+
+      <div class="tee-grid" id="tee-grid"></div>
+
+      <div class="hole-image-wrap">
+        <img id="hole-image" src="" alt="Hole">
+      </div>
+
+      <div class="hole-tip" id="hole-tip"></div>
+
+      <div class="score-card">
+        <div class="score-par">
+          <div class="score-par-label">PAR</div>
+          <div class="score-par-value" id="score-par">4</div>
+        </div>
+        <div class="score-counter">
+          <button class="score-btn minus" id="score-minus" aria-label="Minder">&minus;</button>
+          <div class="score-display">
+            <div class="score-value" id="score-value">&mdash;</div>
+            <div class="score-diff" id="score-diff">tik op + om te beginnen</div>
+          </div>
+          <button class="score-btn plus" id="score-plus" aria-label="Meer">+</button>
+        </div>
+      </div>
+
+      <div class="gps-card">
+        <div class="gps-card-title">GPS Afstandsmeter</div>
+        <div class="gps-map-container">
+          <div class="gps-crosshair"><div class="gps-crosshair-dot"></div></div>
+          <div class="gps-distance-overlay">
+            <div class="dist-value" id="gps-distance">&mdash;&mdash;</div>
+            <div class="dist-unit">meter</div>
+          </div>
+          <div id="gps-map"></div>
+        </div>
+        <p class="gps-hint">Versleep de kaart, het kruis = de plek waarheen je meet.</p>
+      </div>
+    </section>
+
+    <!-- Scherm 3: Map zoom -->
+    <section id="screen-map" class="screen hidden">
+      <img src="holes/coursemap.jpg" alt="Baan" class="zoom-map">
+    </section>
+
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

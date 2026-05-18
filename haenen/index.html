@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Scorekaart De Haenen</title>
+  <style>
+:root {
+  --primary-dark: #1a3a2a;
+  --primary: #2d5a3d;
+  --primary-light: #4a8c5e;
+  --accent: #d4a843;
+  --accent-light: #f0d68a;
+  --surface: #f4f1eb;
+  --card: #ffffff;
+  --text: #1a1a1a;
+  --text-secondary: #5a6b5e;
+  --text-light: #8a9a8e;
+  --border: #e0ddd6;
+  --par3: #3a7ca5;
+  --par4: #4a8c5e;
+  --par5: #c0392b;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --spacing: 16px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--surface); color: var(--text); max-width: 480px;
+  margin: 0 auto; min-height: 100vh;
+  -webkit-tap-highlight-color: transparent; overscroll-behavior: none;
+}
+header {
+  background: var(--primary-dark); color: #fff; padding: 16px var(--spacing);
+  display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+header h1 { font-size: 1.15rem; font-weight: 700; flex: 1; }
+header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
+.back-btn {
+  background: none; border: none; color: #fff; font-size: 1.3rem;
+  cursor: pointer; padding: 6px 10px; border-radius: var(--radius-sm);
+  touch-action: manipulation; display: none;
+}
+.back-btn:active { background: rgba(255,255,255,0.15); }
+.screen { display: none; padding: var(--spacing); padding-bottom: 32px; }
+.screen.active { display: block; animation: fadeIn 0.25s ease-out; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* Setup */
+.setup-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 24px var(--spacing); margin-bottom: 16px;
+}
+.setup-card h2 { font-size: 1.3rem; color: var(--primary-dark); font-weight: 800; margin-bottom: 4px; }
+.setup-card p { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 20px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); margin-bottom: 6px; }
+.form-group input, .form-group select {
+  width: 100%; padding: 12px 14px; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 1rem; font-family: inherit;
+  color: var(--text); background: var(--surface); outline: none;
+}
+.form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+.player-count-btns { display: flex; gap: 8px; }
+.player-count-btn {
+  flex: 1; padding: 14px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); font-size: 1.2rem; font-weight: 800; color: var(--text-light);
+  cursor: pointer; text-align: center; touch-action: manipulation; transition: all 0.15s;
+}
+.player-count-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+.lus-btns { display: flex; gap: 8px; }
+.lus-btn {
+  flex: 1; padding: 14px 12px; border: 2px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); font-size: 0.9rem; font-weight: 700; color: var(--text-secondary);
+  cursor: pointer; text-align: center; touch-action: manipulation; transition: all 0.15s;
+}
+.lus-btn .lus-sub { font-size: 0.7rem; font-weight: 400; color: var(--text-light); margin-top: 2px; }
+.lus-btn.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+.lus-btn.active .lus-sub { color: rgba(255,255,255,0.7); }
+.co-players { margin-top: 0; }
+.co-players .form-group { margin-bottom: 10px; }
+.btn-start {
+  display: block; width: 100%; padding: 16px; background: var(--primary); color: #fff;
+  border: none; border-radius: var(--radius); font-size: 1.1rem; font-weight: 700;
+  cursor: pointer; touch-action: manipulation; margin-top: 8px;
+}
+.btn-start:active { background: var(--primary-dark); }
+.btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Score banner */
+.score-banner {
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: #fff; border-radius: var(--radius); padding: 14px var(--spacing);
+  margin-bottom: 16px;
+}
+.banner-players { display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 8px; }
+.banner-player { text-align: center; min-width: 60px; }
+.banner-player .name { font-weight: 700; font-size: 0.8rem; opacity: 0.85; }
+.banner-player .total { font-size: 1.6rem; font-weight: 800; line-height: 1; margin-top: 2px; }
+.banner-player .name.main-player { opacity: 1; }
+.banner-match { text-align: center; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); margin-top: 8px; }
+.banner-match .match-status { font-size: 0.95rem; font-weight: 800; color: var(--accent-light); }
+.banner-match .match-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.6; letter-spacing: 0.5px; }
+
+/* Hole cards */
+.hole-grid { display: flex; flex-direction: column; gap: 10px; }
+.hole-card {
+  background: var(--card); border-radius: var(--radius); overflow: hidden;
+  cursor: pointer; transition: transform 0.1s; border: 1px solid var(--border);
+  display: flex; align-items: stretch; touch-action: manipulation;
+}
+.hole-card:active { transform: scale(0.98); }
+.hole-card-number { width: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+.hole-card-number .num { font-size: 1.5rem; font-weight: 800; line-height: 1; }
+.hole-card-number .par-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.85; margin-top: 3px; }
+.hole-card-number .par-val { font-size: 0.9rem; font-weight: 700; }
+.par3-bg { background: var(--par3); }
+.par4-bg { background: var(--par4); }
+.par5-bg { background: var(--par5); }
+.hole-card-thumb { width: 90px; height: 68px; object-fit: cover; flex-shrink: 0; }
+.hole-card-info { flex: 1; padding: 10px 12px; display: flex; flex-direction: column; justify-content: center; min-width: 0; }
+.hole-card-distances { font-size: 0.75rem; color: var(--text-secondary); display: flex; gap: 6px; flex-wrap: wrap; }
+.hole-card-distances span { background: var(--surface); padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+.hole-card-scores { display: flex; align-items: center; gap: 4px; margin-top: 4px; font-size: 0.7rem; flex-wrap: wrap; }
+.hole-card-scores .player-score { padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+.hole-card-scores .hole-winner { font-size: 0.7rem; font-weight: 700; margin-left: auto; }
+.score-birdie { background: #dbeafe; color: #1d4ed8; }
+.score-par { background: #dcfce7; color: #16a34a; }
+.score-bogey { background: #fef9c3; color: #a16207; }
+.score-double { background: #fee2e2; color: #dc2626; }
+.score-eagle { background: #ede9fe; color: #7c3aed; }
+.hole-card-arrow { display: flex; align-items: center; padding: 0 12px; color: var(--text-light); font-size: 1.1rem; flex-shrink: 0; }
+
+/* Detail */
+.hole-detail-hero { position: relative; border-radius: var(--radius); overflow: hidden; margin-bottom: var(--spacing); }
+.hole-detail-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; }
+.hole-detail-badge { position: absolute; top: 12px; left: 12px; color: #fff; padding: 6px 14px; border-radius: var(--radius-sm); font-weight: 800; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+.hole-detail-par-badge { position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); color: #fff; padding: 6px 12px; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.9rem; backdrop-filter: blur(4px); }
+
+.info-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: var(--spacing); margin-bottom: 12px; }
+.info-card-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text-light); margin-bottom: 12px; }
+
+/* Score input per player */
+.player-score-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; }
+.player-score-row + .player-score-row { border-top: 1px solid var(--border); }
+.player-label { font-weight: 700; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+.player-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.player-score-info { font-size: 0.75rem; color: var(--text-light); }
+.score-input-controls { display: flex; align-items: center; }
+.score-btn {
+  width: 46px; height: 46px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--primary-dark);
+  font-size: 1.4rem; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+}
+.score-btn:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+.score-btn:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+.score-btn:active { background: var(--border); }
+.score-value {
+  width: 52px; height: 46px; display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; font-weight: 800; background: var(--card);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  color: var(--primary-dark); font-variant-numeric: tabular-nums;
+}
+
+.distances-table { width: 100%; border-collapse: collapse; }
+.distances-table tr { border-bottom: 1px solid var(--border); }
+.distances-table tr:last-child { border-bottom: none; }
+.distances-table td { padding: 8px 0; font-size: 0.9rem; }
+.distances-table .tee-dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin-right: 8px; vertical-align: middle; border: 1px solid rgba(0,0,0,0.1); }
+.tee-white { background: #fff; border: 1px solid #ccc !important; }
+.tee-yellow { background: #f5d442; }
+.tee-blue { background: #2e86de; }
+.tee-red { background: #e74c3c; }
+.tee-orange { background: #f39c12; }
+.distances-table .tee-name { color: var(--text-secondary); font-weight: 500; }
+.distances-table .tee-distance { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.distances-table .tee-unit { color: var(--text-light); font-weight: 400; font-size: 0.8rem; margin-left: 2px; }
+
+.flyover-video { width: 100%; border-radius: var(--radius); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+.hole-nav { display: flex; gap: 10px; margin-top: 8px; }
+.hole-nav-btn {
+  flex: 1; background: var(--card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 14px; font-size: 0.9rem;
+  font-weight: 600; color: var(--text); cursor: pointer; text-align: center;
+  touch-action: manipulation;
+}
+.hole-nav-btn:active { transform: scale(0.97); }
+.hole-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.hole-nav-btn.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* Summary */
+.summary-header {
+  text-align: center; background: linear-gradient(135deg, var(--accent), #d4a843);
+  color: var(--primary-dark); padding: 24px; border-radius: var(--radius); margin-bottom: 16px;
+}
+.summary-header .winner-name { font-size: 1.3rem; font-weight: 800; }
+.summary-header .winner-score { font-size: 2.5rem; font-weight: 800; line-height: 1; margin-top: 4px; }
+.summary-header .winner-sub { font-size: 0.85rem; margin-top: 4px; opacity: 0.7; }
+.summary-table {
+  width: 100%; border-collapse: collapse; background: var(--card);
+  border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border);
+  font-size: 0.8rem; margin-bottom: 16px;
+}
+.summary-table th { background: var(--primary-dark); color: #fff; padding: 10px 6px; text-align: center; font-weight: 600; font-size: 0.7rem; text-transform: uppercase; }
+.summary-table th:first-child { text-align: left; padding-left: 10px; }
+.summary-table td { padding: 9px 6px; border-bottom: 1px solid var(--border); text-align: center; font-variant-numeric: tabular-nums; }
+.summary-table td:first-child { text-align: left; font-weight: 600; padding-left: 10px; }
+.summary-table tr:last-child td { border-bottom: none; }
+.summary-table .total-row td { background: var(--surface); font-weight: 700; }
+.btn-back { display: block; width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius); font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; }
+.btn-reset { display: block; width: 100%; padding: 14px; background: none; border: 1px solid #ccc; border-radius: var(--radius); color: var(--text-light); font-size: 0.85rem; cursor: pointer; text-align: center; margin-top: 8px; }
+.btn-summary { display: block; width: 100%; padding: 16px; margin-top: 20px; background: var(--accent); color: var(--primary-dark); border: none; border-radius: var(--radius); font-size: 1rem; font-weight: 700; cursor: pointer; text-align: center; }
+/* GPS Map */
+.gps-map-container { position: relative; }
+.gps-crosshair {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 500; pointer-events: none;
+}
+.gps-crosshair::before, .gps-crosshair::after {
+  content: ''; position: absolute; background: #fff; border-radius: 1px;
+  box-shadow: 0 0 3px rgba(0,0,0,0.7);
+}
+.gps-crosshair::before { width: 2px; height: 28px; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.gps-crosshair::after { width: 28px; height: 2px; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+.gps-crosshair-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #ff3b30;
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px rgba(255,59,48,0.8);
+}
+.gps-distance-overlay {
+  position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+  z-index: 500; background: rgba(0,0,0,0.7); color: #fff;
+  padding: 8px 18px; border-radius: 20px; text-align: center;
+  backdrop-filter: blur(4px); pointer-events: none;
+}
+.gps-distance-overlay .dist-value { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
+.gps-distance-overlay .dist-unit { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; }
+.gps-hint { font-size: 0.7rem; color: var(--text-light); text-align: center; margin-top: 8px; font-style: italic; }
+#gpsMap { z-index: 1; }
+  </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+
+<header>
+  <button class="back-btn" id="backBtn">&#8592;</button>
+  <div>
+    <h1 id="headerTitle">Scorekaart</h1>
+    <div class="subtitle" id="headerSubtitle">De Haenen</div>
+  </div>
+</header>
+
+<div class="screen active" id="lockScreen">
+  <div class="setup-card" style="text-align:center;">
+    <h2>Scorekaart De Haenen</h2>
+    <p>Voer de toegangscode in</p>
+    <div class="form-group">
+      <input type="password" id="lockCode" placeholder="Toegangscode" autocomplete="off" style="text-align:center; font-size:1.2rem; letter-spacing:2px;">
+    </div>
+    <button class="btn-start" id="btnUnlock">Ga verder</button>
+    <div id="lockError" style="color:var(--par5); font-size:0.8rem; margin-top:12px; display:none;">Ongeldige code</div>
+  </div>
+</div>
+
+<div class="screen" id="setupScreen">
+  <div class="setup-card">
+    <h2>Scorekaart De Haenen</h2>
+    <p>Stel je ronde in en ga spelen</p>
+
+    <div class="form-group">
+      <label>Aantal spelers</label>
+      <div class="player-count-btns" id="countBtns">
+        <button class="player-count-btn" data-count="1">1</button>
+        <button class="player-count-btn active" data-count="2">2</button>
+        <button class="player-count-btn" data-count="3">3</button>
+        <button class="player-count-btn" data-count="4">4</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Hoofdspeler</label>
+      <input type="text" id="mainPlayer" placeholder="Jouw naam" autocomplete="off">
+    </div>
+
+    <div class="co-players" id="coPlayersSection">
+      <div class="form-group">
+        <label>Medespeler 1</label>
+        <input type="text" class="co-player-input" placeholder="Naam" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Lus</label>
+      <div class="lus-btns" id="lusBtns">
+        <button class="lus-btn active" data-lus="1">
+          Lus 1<div class="lus-sub">Hole 1–9</div>
+        </button>
+        <button class="lus-btn" data-lus="2">
+          Lus 2<div class="lus-sub">Hole 10–18</div>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-start" id="btnStart">Start ronde</button>
+  </div>
+</div>
+
+<div class="screen" id="overviewScreen">
+  <div class="score-banner" id="scoreBanner"></div>
+  <div class="hole-grid" id="holeGrid"></div>
+  <button class="btn-summary" onclick="showSummary()">Bekijk resultaat</button>
+</div>
+
+<div class="screen" id="detailScreen"></div>
+<div class="screen" id="summaryScreen"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const PLAYER_COLORS = ['#2e86de', '#e67e22', '#8e44ad', '#27ae60'];
+
+const ALL_HOLES = [
+  { hole:1,  par:4, si:7,  white:365, yellow:349, blue:328, red:320, orange:261, yt:'DpVETX1D_fs' },
+  { hole:2,  par:4, si:5,  white:347, yellow:343, blue:292, red:287, orange:248, yt:'ZtpUGV8AQLs' },
+  { hole:3,  par:5, si:9,  white:485, yellow:483, blue:419, red:404, orange:376, yt:'ThnaSAZp_pE' },
+  { hole:4,  par:3, si:17, white:149, yellow:132, blue:130, red:115, orange:115, yt:'w-mIEi2yYKQ' },
+  { hole:5,  par:5, si:11, white:472, yellow:465, blue:381, red:377, orange:335, yt:'wL54C8KVQ0Y' },
+  { hole:6,  par:4, si:1,  white:395, yellow:380, blue:371, red:312, orange:280, yt:'MxvdwAVByqA' },
+  { hole:7,  par:3, si:15, white:153, yellow:141, blue:139, red:125, orange:125, yt:'plPDFhKZm14' },
+  { hole:8,  par:3, si:13, white:181, yellow:154, blue:143, red:131, orange:117, yt:'mjQHWU3v-3g' },
+  { hole:9,  par:4, si:3,  white:372, yellow:358, blue:321, red:316, orange:275, yt:'nvqzm1AwDsk' },
+  { hole:10, par:3, si:16, white:148, yellow:148, blue:129, red:129, orange:129, yt:'drKmJlBG8F4' },
+  { hole:11, par:4, si:18, white:277, yellow:272, blue:272, red:247, orange:202, yt:'qadvbGJAz9I' },
+  { hole:12, par:3, si:14, white:171, yellow:155, blue:155, red:144, orange:144, yt:'szgl6U4bRmM' },
+  { hole:13, par:5, si:2,  white:474, yellow:461, blue:460, red:380, orange:355, yt:'XdiO81q8TmI' },
+  { hole:14, par:4, si:10, white:336, yellow:314, blue:311, red:268, orange:226, yt:'KoXztvPElGI' },
+  { hole:15, par:4, si:4,  white:384, yellow:366, blue:360, red:297, orange:266, yt:'mRnIgorYC38' },
+  { hole:16, par:4, si:6,  white:360, yellow:343, blue:337, red:291, orange:240, yt:'vbMtd8Zlntc' },
+  { hole:17, par:4, si:12, white:339, yellow:290, blue:308, red:244, orange:209, yt:'fpwvHi4Qb2I' },
+  { hole:18, par:4, si:8,  white:321, yellow:302, blue:294, red:261, orange:218, yt:'Ou_jgHuNqC0' }
+];
+
+const LOCAL_KEY = 'haenen_scorekaart';
+let config = null; // { players: ['Pelle','Joop'], lus: 1 }
+let holes = [];
+let scores = {}; // { 'Pelle': { 10: 4, 11: 5 }, 'Joop': { ... } }
+
+// --- Setup ---
+let selectedCount = 2;
+let selectedLus = 1;
+
+document.getElementById('countBtns').onclick = e => {
+  const btn = e.target.closest('.player-count-btn');
+  if (!btn) return;
+  selectedCount = parseInt(btn.dataset.count);
+  document.querySelectorAll('.player-count-btn').forEach(b => b.classList.toggle('active', b === btn));
+  renderCoPlayers();
+};
+
+document.getElementById('lusBtns').onclick = e => {
+  const btn = e.target.closest('.lus-btn');
+  if (!btn) return;
+  selectedLus = parseInt(btn.dataset.lus);
+  document.querySelectorAll('.lus-btn').forEach(b => b.classList.toggle('active', b === btn));
+};
+
+function renderCoPlayers() {
+  const section = document.getElementById('coPlayersSection');
+  const coCount = selectedCount - 1;
+  if (coCount === 0) {
+    section.innerHTML = '';
+    return;
+  }
+  let html = '';
+  for (let i = 1; i <= coCount; i++) {
+    html += `<div class="form-group">
+      <label>Medespeler ${i}</label>
+      <input type="text" class="co-player-input" placeholder="Naam" autocomplete="off">
+    </div>`;
+  }
+  section.innerHTML = html;
+}
+
+document.getElementById('btnStart').onclick = () => {
+  const mainName = document.getElementById('mainPlayer').value.trim();
+  if (!mainName) return;
+  const coInputs = document.querySelectorAll('.co-player-input');
+  const players = [mainName];
+  for (const input of coInputs) {
+    const name = input.value.trim();
+    if (!name) return;
+    players.push(name);
+  }
+  config = { players, lus: selectedLus };
+  holes = selectedLus === 1 ? ALL_HOLES.slice(0, 9) : ALL_HOLES.slice(9);
+  scores = {};
+  players.forEach(p => {
+    scores[p] = {};
+    holes.forEach(h => { scores[p][h.hole] = h.par; });
+  });
+  saveLocal();
+  startRound();
+};
+
+// --- Persistence ---
+function saveLocal() { localStorage.setItem(LOCAL_KEY, JSON.stringify({ config, scores })); }
+function loadLocal() {
+  try {
+    const d = JSON.parse(localStorage.getItem(LOCAL_KEY));
+    if (d && d.config && d.config.players && d.config.players.length) {
+      config = d.config;
+      scores = d.scores;
+      holes = config.lus === 1 ? ALL_HOLES.slice(0, 9) : ALL_HOLES.slice(9);
+      return true;
+    }
+  } catch(e) {}
+  return false;
+}
+
+// --- Helpers ---
+function totalStrokes(player) { return holes.reduce((sum, h) => sum + (scores[player][h.hole] || h.par), 0); }
+function totalVsPar(player) { return totalStrokes(player) - holes.reduce((s, h) => s + h.par, 0); }
+function formatVsPar(n) { return n === 0 ? 'E' : (n > 0 ? '+' + n : String(n)); }
+function initial(name) { return name.charAt(0).toUpperCase(); }
+function ytThumb(id) { return `https://img.youtube.com/vi/${id}/mqdefault.jpg`; }
+function ytThumbHQ(id) { return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
+function parClass(par) { return par === 3 ? 'par3-bg' : par === 5 ? 'par5-bg' : 'par4-bg'; }
+function scoreName(diff) {
+  if (diff <= -3) return 'Albatross'; if (diff === -2) return 'Eagle'; if (diff === -1) return 'Birdie';
+  if (diff === 0) return 'Par'; if (diff === 1) return 'Bogey'; if (diff === 2) return 'Dbl Bogey'; return '+' + diff;
+}
+function scoreClass(score, par) {
+  const diff = score - par;
+  if (diff <= -2) return 'score-eagle';
+  if (diff === -1) return 'score-birdie';
+  if (diff === 0) return 'score-par';
+  if (diff === 1) return 'score-bogey';
+  return 'score-double';
+}
+
+function matchPlayStatus() {
+  if (config.players.length !== 2) return null;
+  const [a, b] = config.players;
+  let wA = 0, wB = 0;
+  holes.forEach(h => {
+    const sA = scores[a][h.hole] || h.par;
+    const sB = scores[b][h.hole] || h.par;
+    if (sA < sB) wA++;
+    else if (sB < sA) wB++;
+  });
+  const diff = wA - wB;
+  if (diff === 0) return 'All Square';
+  if (diff > 0) return `${a} ${diff} UP`;
+  return `${b} ${-diff} UP`;
+}
+
+function holeWinnerLabel(hole) {
+  if (config.players.length !== 2) return '';
+  const [a, b] = config.players;
+  const sA = scores[a][hole] || 0;
+  const sB = scores[b][hole] || 0;
+  if (sA < sB) return `<span style="color:${PLAYER_COLORS[0]}">${initial(a)}</span>`;
+  if (sB < sA) return `<span style="color:${PLAYER_COLORS[1]}">${initial(b)}</span>`;
+  return '<span style="color:var(--text-light)">=</span>';
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// --- Round ---
+function startRound() {
+  renderOverview();
+  showScreen('overviewScreen');
+  updateHeader('overview');
+}
+
+function renderBanner() {
+  const banner = document.getElementById('scoreBanner');
+  let playersHtml = config.players.map((p, i) =>
+    `<div class="banner-player">
+      <div class="name${i === 0 ? ' main-player' : ''}">${p}</div>
+      <div class="total" style="color:${PLAYER_COLORS[i]}">${formatVsPar(totalVsPar(p))}</div>
+    </div>`
+  ).join('');
+
+  let matchHtml = '';
+  const mp = matchPlayStatus();
+  if (mp !== null) {
+    matchHtml = `<div class="banner-match">
+      <div class="match-status">${mp}</div>
+      <div class="match-label">Match Play</div>
+    </div>`;
+  }
+
+  banner.innerHTML = `<div class="banner-players">${playersHtml}</div>${matchHtml}`;
+}
+
+function renderOverview() {
+  renderBanner();
+  const grid = document.getElementById('holeGrid');
+  grid.innerHTML = '';
+
+  holes.forEach(h => {
+    const scoresHtml = config.players.map((p, i) => {
+      const s = scores[p][h.hole] || h.par;
+      return `<span class="player-score ${scoreClass(s, h.par)}">${initial(p)}: ${s}</span>`;
+    }).join('');
+    const winnerHtml = config.players.length === 2 ? `<span class="hole-winner">${holeWinnerLabel(h.hole)}</span>` : '';
+
+    const card = document.createElement('div');
+    card.className = 'hole-card';
+    card.onclick = () => showHole(h.hole);
+    card.innerHTML = `
+      <div class="hole-card-number ${parClass(h.par)}">
+        <div class="num">${h.hole}</div>
+        <div class="par-label">Par</div>
+        <div class="par-val">${h.par}</div>
+      </div>
+      <img class="hole-card-thumb" src="${ytThumb(h.yt)}" alt="Hole ${h.hole}" loading="lazy">
+      <div class="hole-card-info">
+        <div class="hole-card-distances">
+          <span style="color:#666">&#9898; ${h.white}m</span>
+          <span style="color:#c8a415">&#9899; ${h.yellow}m</span>
+          <span style="color:#2e86de">&#9899; ${h.blue}m</span>
+        </div>
+        <div class="hole-card-scores">${scoresHtml}${winnerHtml}</div>
+      </div>
+      <div class="hole-card-arrow">&#8250;</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// --- Hole detail ---
+function showHole(num) {
+  const h = holes.find(x => x.hole === num);
+  const detail = document.getElementById('detailScreen');
+
+  const tees = [
+    { name:'Wit', cls:'tee-white', d:h.white }, { name:'Geel', cls:'tee-yellow', d:h.yellow },
+    { name:'Blauw', cls:'tee-blue', d:h.blue }, { name:'Rood', cls:'tee-red', d:h.red },
+    { name:'Oranje', cls:'tee-orange', d:h.orange }
+  ];
+
+  const holeIdx = holes.indexOf(h);
+  const prevHole = holeIdx > 0 ? holes[holeIdx - 1].hole : null;
+  const nextHole = holeIdx < holes.length - 1 ? holes[holeIdx + 1].hole : null;
+
+  const playerRows = config.players.map((p, i) => {
+    const s = scores[p][num] || h.par;
+    return `<div class="player-score-row">
+      <div>
+        <div class="player-label"><span class="player-dot" style="background:${PLAYER_COLORS[i]}"></span> ${p}</div>
+        <div class="player-score-info" id="scoreInfo_${i}">${scoreName(s - h.par)}</div>
+      </div>
+      <div class="score-input-controls">
+        <button class="score-btn" onclick="changeScore(${i},${num},-1)">-</button>
+        <div class="score-value" id="scoreVal_${i}">${s}</div>
+        <button class="score-btn" onclick="changeScore(${i},${num},1)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  detail.innerHTML = `
+    <div class="info-card">
+      <div class="info-card-title">Flyover &middot; Hole ${h.hole} &middot; Par ${h.par}</div>
+      <video class="flyover-video" autoplay muted loop playsinline onloadedmetadata="this.playbackRate=3">
+        <source src="flyovers/hole-${h.hole}.mp4" type="video/mp4">
+      </video>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">Afstanden &middot; Par ${h.par}</div>
+      <table class="distances-table">
+        ${tees.map(t=>`<tr><td><span class="tee-dot ${t.cls}"></span><span class="tee-name">${t.name}</span></td><td class="tee-distance">${t.d}<span class="tee-unit">m</span></td></tr>`).join('')}
+      </table>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">Score &middot; Par ${h.par}</div>
+      ${playerRows}
+    </div>
+    <div class="info-card" style="padding:0; overflow:hidden;">
+      <div style="padding:var(--spacing) var(--spacing) 8px;">
+        <div class="info-card-title" style="margin-bottom:0;">GPS Afstand</div>
+      </div>
+      <div class="gps-map-container">
+        <div class="gps-crosshair"><div class="gps-crosshair-dot"></div></div>
+        <div class="gps-distance-overlay">
+          <div class="dist-value" id="gpsDistance">--</div>
+          <div class="dist-unit">meter</div>
+        </div>
+        <div id="gpsMap" style="height:320px; background:#ddd;"></div>
+      </div>
+    </div>
+    <div class="hole-nav">
+      <button class="hole-nav-btn" onclick="showHoleClean(${prevHole})" ${!prevHole?'disabled':''}>&larr; Hole ${prevHole||''}</button>
+      ${nextHole
+        ? `<button class="hole-nav-btn primary" onclick="showHoleClean(${nextHole})">Hole ${nextHole} &rarr;</button>`
+        : `<button class="hole-nav-btn primary" onclick="cleanupGps(); showSummary()">Bekijk resultaat &rarr;</button>`}
+    </div>`;
+
+  showScreen('detailScreen');
+  initGpsMap();
+  document.getElementById('backBtn').style.display = 'block';
+  document.getElementById('backBtn').onclick = () => { cleanupGps(); showScreen('overviewScreen'); updateHeader('overview'); renderOverview(); };
+  document.getElementById('headerTitle').textContent = `Hole ${h.hole} — Par ${h.par}`;
+  const subParts = config.players.map((p, i) => `${initial(p)}: ${formatVsPar(totalVsPar(p))}`);
+  document.getElementById('headerSubtitle').textContent = subParts.join(' | ');
+}
+
+function showHoleClean(num) { cleanupGps(); showHole(num); }
+
+function changeScore(playerIdx, hole, delta) {
+  const p = config.players[playerIdx];
+  const h = holes.find(x => x.hole === hole);
+  const current = scores[p][hole] || h.par;
+  const next = current + delta;
+  if (next < 1) return;
+  scores[p][hole] = next;
+  saveLocal();
+  document.getElementById('scoreVal_' + playerIdx).textContent = next;
+  document.getElementById('scoreInfo_' + playerIdx).textContent = scoreName(next - h.par);
+}
+
+// --- Summary ---
+function showSummary() {
+  const screen = document.getElementById('summaryScreen');
+  const parTotal = holes.reduce((s, h) => s + h.par, 0);
+  const lusLabel = config.lus === 1 ? 'Lus 1 (1–9)' : 'Lus 2 (10–18)';
+
+  // Find winner
+  const sorted = [...config.players].sort((a, b) => totalStrokes(a) - totalStrokes(b));
+  const best = totalStrokes(sorted[0]);
+  const isTie = config.players.length > 1 && totalStrokes(sorted[1]) === best;
+
+  let winnerText, winnerScore;
+  if (config.players.length === 1) {
+    winnerText = sorted[0];
+    winnerScore = `${best} (${formatVsPar(totalVsPar(sorted[0]))})`;
+  } else if (isTie) {
+    winnerText = 'Gelijkspel!';
+    winnerScore = `${best} (${formatVsPar(totalVsPar(sorted[0]))})`;
+  } else {
+    winnerText = `${sorted[0]} wint!`;
+    winnerScore = `${best} (${formatVsPar(totalVsPar(sorted[0]))})`;
+  }
+
+  const playerHeaders = config.players.map(p => `<th>${p}</th>`).join('');
+  let rows = '';
+  holes.forEach(h => {
+    const cells = config.players.map(p => `<td>${scores[p][h.hole] || h.par}</td>`).join('');
+    rows += `<tr><td>${h.hole}</td><td>${h.par}</td>${cells}</tr>`;
+  });
+  const totalCells = config.players.map(p => `<td>${totalStrokes(p)}</td>`).join('');
+  rows += `<tr class="total-row"><td>Totaal</td><td>${parTotal}</td>${totalCells}</tr>`;
+  const vpCells = config.players.map(p => `<td>${formatVsPar(totalVsPar(p))}</td>`).join('');
+  rows += `<tr class="total-row"><td>vs Par</td><td></td>${vpCells}</tr>`;
+
+  let matchHtml = '';
+  const mp = matchPlayStatus();
+  if (mp !== null) {
+    matchHtml = `<div style="font-size:0.9rem; margin-top:8px; opacity:0.8">Match Play: ${mp}</div>`;
+  }
+
+  screen.innerHTML = `
+    <div class="summary-header">
+      <div class="winner-name">${winnerText}</div>
+      <div class="winner-score">${winnerScore}</div>
+      <div class="winner-sub">${lusLabel} &middot; De Haenen</div>
+      ${matchHtml}
+    </div>
+    <div class="info-card" style="padding:0; overflow:hidden;">
+      <table class="summary-table">
+        <thead><tr><th>Hole</th><th>Par</th>${playerHeaders}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <button class="btn-back" onclick="showScreen('overviewScreen'); updateHeader('overview'); renderOverview();">Terug naar overzicht</button>
+    <button class="btn-reset" onclick="resetRound()">Nieuwe ronde</button>`;
+  showScreen('summaryScreen');
+  updateHeader('summary');
+}
+
+function resetRound() {
+  if (!confirm('Weet je zeker dat je opnieuw wilt beginnen?')) return;
+  localStorage.removeItem(LOCAL_KEY);
+  config = null; scores = {};
+  showScreen('setupScreen');
+  updateHeader('setup');
+}
+
+function updateHeader(screen) {
+  const btn = document.getElementById('backBtn');
+  const title = document.getElementById('headerTitle');
+  const sub = document.getElementById('headerSubtitle');
+  btn.style.display = 'none'; btn.onclick = null;
+  if (screen === 'setup') {
+    title.textContent = 'Scorekaart'; sub.textContent = 'De Haenen';
+  } else if (screen === 'overview') {
+    const lusLabel = config.lus === 1 ? 'Lus 1 (1–9)' : 'Lus 2 (10–18)';
+    title.textContent = config.players.join(' & '); sub.textContent = `${lusLabel} · De Haenen`;
+    btn.style.display = 'block';
+    btn.onclick = () => { if (confirm('Terug naar het hoofdmenu?')) { resetRound(); } };
+  } else if (screen === 'summary') {
+    btn.style.display = 'block';
+    btn.onclick = () => { showScreen('overviewScreen'); updateHeader('overview'); renderOverview(); };
+    title.textContent = 'Resultaat';
+    const subParts = config.players.map(p => `${initial(p)}: ${formatVsPar(totalVsPar(p))}`);
+    sub.textContent = subParts.join(' | ');
+  }
+}
+
+// --- GPS ---
+const COURSE_CENTER = [51.616, 4.833];
+let gpsMap = null;
+let gpsWatchId = null;
+let gpsUserMarker = null;
+let gpsUserCircle = null;
+let gpsUserPos = null;
+
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const toRad = x => x * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1), dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function updateGpsDistance() {
+  const el = document.getElementById('gpsDistance');
+  if (!el || !gpsMap || !gpsUserPos) { if (el) el.textContent = '--'; return; }
+  const center = gpsMap.getCenter();
+  const dist = haversineDistance(gpsUserPos[0], gpsUserPos[1], center.lat, center.lng);
+  el.textContent = Math.round(dist);
+}
+
+function cleanupGps() {
+  if (gpsWatchId !== null) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; }
+  if (gpsMap) { gpsMap.remove(); gpsMap = null; }
+  gpsUserMarker = null; gpsUserCircle = null;
+}
+
+function initGpsMap() {
+  cleanupGps();
+
+  const mapEl = document.getElementById('gpsMap');
+  if (!mapEl || typeof L === 'undefined') return;
+
+  const initCenter = gpsUserPos || COURSE_CENTER;
+
+  gpsMap = L.map('gpsMap', { center: initCenter, zoom: 18, zoomControl: true, attributionControl: false });
+
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 20
+  }).addTo(gpsMap);
+
+  // Update distance while panning/zooming
+  gpsMap.on('move', updateGpsDistance);
+
+  // If we already have a GPS position, place the marker and center on it
+  if (gpsUserPos) {
+    const userIcon = L.divIcon({
+      className: '',
+      html: '<div style="width:16px;height:16px;border-radius:50%;background:#4285f4;border:3px solid #fff;box-shadow:0 0 10px rgba(66,133,244,0.7);"></div>',
+      iconSize: [16, 16], iconAnchor: [8, 8]
+    });
+    gpsUserMarker = L.marker(gpsUserPos, { icon: userIcon, interactive: false, zIndexOffset: 1000 }).addTo(gpsMap);
+    gpsMap.setView(gpsUserPos, 18);
+  }
+
+  // Watch GPS position
+  if ('geolocation' in navigator) {
+    gpsWatchId = navigator.geolocation.watchPosition(
+      pos => {
+        gpsUserPos = [pos.coords.latitude, pos.coords.longitude];
+        const userIcon = L.divIcon({
+          className: '',
+          html: '<div style="width:16px;height:16px;border-radius:50%;background:#4285f4;border:3px solid #fff;box-shadow:0 0 10px rgba(66,133,244,0.7);"></div>',
+          iconSize: [16, 16], iconAnchor: [8, 8]
+        });
+        if (!gpsUserMarker) {
+          gpsUserMarker = L.marker(gpsUserPos, { icon: userIcon, interactive: false, zIndexOffset: 1000 }).addTo(gpsMap);
+          gpsMap.setView(gpsUserPos, 18);
+        } else {
+          gpsUserMarker.setLatLng(gpsUserPos);
+        }
+        updateGpsDistance();
+      },
+      err => { console.log('GPS error:', err.message); },
+      { enableHighAccuracy: true, maximumAge: 3000, timeout: 10000 }
+    );
+  }
+}
+
+// --- Lock screen ---
+const ACCESS_CODE = 'PELLE!';
+const LOCK_KEY = 'haenen_unlocked';
+
+function checkUnlocked() {
+  return sessionStorage.getItem(LOCK_KEY) === '1';
+}
+
+document.getElementById('btnUnlock').onclick = () => {
+  const input = document.getElementById('lockCode').value.trim();
+  if (input === ACCESS_CODE) {
+    sessionStorage.setItem(LOCK_KEY, '1');
+    initApp();
+  } else {
+    document.getElementById('lockError').style.display = 'block';
+  }
+};
+
+document.getElementById('lockCode').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('btnUnlock').click();
+});
+
+function initApp() {
+  if (loadLocal() && config) {
+    startRound();
+  } else {
+    showScreen('setupScreen');
+  }
+}
+
+// --- Init ---
+if (checkUnlocked()) {
+  initApp();
+} else {
+  showScreen('lockScreen');
+}
+</script>
+</body>
+</html>
