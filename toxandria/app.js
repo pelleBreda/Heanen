@@ -503,10 +503,12 @@ $('#prev-hole').addEventListener('click', () => {
   openHole(next);
 });
 
-$('#next-hole').addEventListener('click', () => {
+function gotoNextHole() {
   const next = currentHole === 18 ? 1 : currentHole + 1;
   openHole(next);
-});
+}
+$('#next-hole').addEventListener('click', gotoNextHole);
+$('#btn-next-hole-bottom').addEventListener('click', gotoNextHole);
 
 $('#course-map').addEventListener('click', () => showScreen('map'));
 

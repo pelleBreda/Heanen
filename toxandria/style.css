@@ -389,6 +389,7 @@ header h1 {
   font-size: 0.92rem;
   line-height: 1.45;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 18px;
 }
 .hole-tip strong { color: var(--tox-blue); }
 
@@ -467,6 +468,36 @@ header h1 {
 .btn-primary-large:active {
   background: var(--tox-blue-dark);
   transform: scale(0.98);
+}
+
+.btn-secondary-large {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  background: var(--tox-cream);
+  color: var(--tox-blue);
+  border: 2px solid var(--tox-blue);
+  border-radius: var(--radius);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  margin-top: 8px;
+}
+.btn-secondary-large:active {
+  background: #fff;
+  transform: scale(0.98);
+}
+
+.bottom-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+.bottom-nav .btn-primary-large,
+.bottom-nav .btn-secondary-large {
+  margin-top: 0;
 }
 
 /* ---------- Team card on start ---------- */
