@@ -860,6 +860,33 @@ header h1 {
   font-style: italic;
 }
 
+.gps-center-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 500;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: #fff;
+  color: var(--tox-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.gps-center-btn:active {
+  background: var(--tox-cream);
+  transform: scale(0.95);
+}
+.gps-center-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 /* ---------- Zoom map ---------- */
 #screen-map { padding: 0; background: #000; min-height: 100vh; }
 .zoom-map {

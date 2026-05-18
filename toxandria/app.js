@@ -722,6 +722,15 @@ $('#btn-next-hole-bottom').addEventListener('click', gotoNextHole);
 
 $('#course-map').addEventListener('click', () => showScreen('map'));
 
+$('#gps-center-btn').addEventListener('click', () => {
+  if (!gpsMap) return;
+  if (gpsUserPos) {
+    gpsMap.setView(gpsUserPos, 18, { animate: true });
+  } else {
+    alert('Nog geen GPS-positie. Wacht tot het blauwe bolletje verschijnt.');
+  }
+});
+
 // Setup
 $$('.count-btn').forEach(b => {
   b.addEventListener('click', () => {

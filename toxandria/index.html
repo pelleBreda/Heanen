@@ -11,7 +11,7 @@
   <link rel="apple-touch-icon" href="icon.svg">
   <title>Toxandria - Texas Scramble</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-  <link rel="stylesheet" href="style.css?v=20260518c">
+  <link rel="stylesheet" href="style.css?v=20260518d">
 </head>
 <body>
 
@@ -193,6 +193,16 @@
             <div class="dist-unit">meter</div>
           </div>
           <div id="gps-map"></div>
+          <button id="gps-center-btn" class="gps-center-btn" aria-label="Centreer op mijn locatie" title="Centreer op mijn locatie">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="9"></circle>
+              <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+              <line x1="12" y1="1" x2="12" y2="4"></line>
+              <line x1="12" y1="20" x2="12" y2="23"></line>
+              <line x1="1" y1="12" x2="4" y2="12"></line>
+              <line x1="20" y1="12" x2="23" y2="12"></line>
+            </svg>
+          </button>
         </div>
         <p class="gps-hint">Versleep om te richten &middot; 2 vingers draaien &middot; tik kompas voor N&uarr;</p>
       </div>
@@ -266,6 +276,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
-  <script src="app.js?v=20260518c"></script>
+  <script src="app.js?v=20260518d"></script>
 </body>
 </html>
