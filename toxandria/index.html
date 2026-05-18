@@ -43,6 +43,22 @@
         <div id="player-inputs"></div>
       </div>
 
+      <div class="card">
+        <h2>Delen met andere flight</h2>
+        <label class="share-toggle">
+          <input type="checkbox" id="share-toggle">
+          <span>Scores live delen met je golfmaatje</span>
+        </label>
+        <div id="share-options" class="hidden">
+          <div class="share-row">
+            <input type="text" id="share-key-input" placeholder="Code van je maatje" maxlength="40" autocomplete="off">
+            <button id="btn-new-key" class="btn-mini">Nieuw</button>
+          </div>
+          <p class="share-hint">Maak een nieuwe code &amp; deel die, of vul de code van je maatje in.</p>
+          <div id="share-status" class="share-status hidden"></div>
+        </div>
+      </div>
+
       <button id="btn-start-round" class="btn-primary-large">Start ronde</button>
     </section>
 
@@ -84,6 +100,13 @@
           </div>
           <button class="btn-edit-team" id="btn-edit-team">Aanpassen</button>
         </div>
+      </div>
+
+      <div class="card card-other hidden" id="other-card-link">
+        <button id="btn-view-other" class="btn-view-other">
+          <div class="bvo-label">Bekijk andere flight</div>
+          <div class="bvo-sub" id="bvo-sub">Tik om bij te werken</div>
+        </button>
       </div>
 
       <div class="card card-total">
@@ -205,6 +228,33 @@
       </div>
 
       <button class="btn-primary-large" id="btn-back-from-result">&larr; Terug</button>
+    </section>
+
+    <!-- Scherm 3b: Andere flight bekijken -->
+    <section id="screen-other" class="screen hidden">
+      <div class="hero">
+        <div class="hero-title" id="other-title">Andere flight</div>
+        <div class="hero-sub" id="other-sub">Bijwerken...</div>
+      </div>
+
+      <div class="card card-result-top">
+        <div class="result-strokes" id="other-strokes">&mdash;</div>
+        <div class="result-vs-par" id="other-vs-par">&mdash;</div>
+        <div class="result-par-line" id="other-par-line">&nbsp;</div>
+      </div>
+
+      <div class="card" id="other-current-card">
+        <div class="other-current-label">Nu bezig met</div>
+        <div class="other-current-value" id="other-current">&mdash;</div>
+      </div>
+
+      <div class="card">
+        <h2>Per hole</h2>
+        <table class="result-table" id="other-table"></table>
+      </div>
+
+      <button id="btn-refresh-other" class="btn-primary-large">&#x21bb; Vernieuwen</button>
+      <button id="btn-back-from-other" class="btn-secondary-large">&larr; Terug</button>
     </section>
 
     <!-- Scherm 4: Map zoom -->

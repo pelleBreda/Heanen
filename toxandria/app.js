@@ -141,6 +141,7 @@ function initGpsMap() {
 
 // ===== Persistente state =====
 const STORAGE_KEY = 'toxandria-state-v2';
+const DEVICE_KEY = 'toxandria-device-id';
 
 function loadState() {
   try {
@@ -148,20 +149,97 @@ function loadState() {
     return {
       players: Array.isArray(raw.players) ? raw.players : null,
       scores: raw.scores && typeof raw.scores === 'object' ? raw.scores : {},
-      drives: raw.drives && typeof raw.drives === 'object' ? raw.drives : {}
+      drives: raw.drives && typeof raw.drives === 'object' ? raw.drives : {},
+      share: raw.share && typeof raw.share === 'object' ? raw.share : { enabled: false, key: null }
     };
   } catch (e) {
-    return { players: null, scores: {}, drives: {} };
+    return { players: null, scores: {}, drives: {}, share: { enabled: false, key: null } };
   }
+}
+
+function getDeviceId() {
+  let id = localStorage.getItem(DEVICE_KEY);
+  if (!id) {
+    id = 'd-' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+    localStorage.setItem(DEVICE_KEY, id);
+  }
+  return id;
 }
 
 let state = loadState();
 let scores = state.scores;
-let drives = state.drives;  // {hole: playerIndex}
-let players = state.players; // null als nog niet geconfigureerd
+let drives = state.drives;
+let players = state.players;
+let share = state.share;
+const deviceId = getDeviceId();
 
 function saveAll() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ players, scores, drives }));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ players, scores, drives, share }));
+}
+
+// ===== Cloud sync (jsonblob.com) =====
+const SYNC_BASE = 'https://jsonblob.com/api/jsonBlob';
+
+async function createSharedBlob() {
+  const initial = { slots: {}, createdAt: new Date().toISOString() };
+  const res = await fetch(SYNC_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(initial)
+  });
+  if (!res.ok) throw new Error('Aanmaken mislukt');
+  const loc = res.headers.get('Location') || res.headers.get('location');
+  if (!loc) throw new Error('Geen locatie ontvangen');
+  return loc.split('/').pop();
+}
+
+async function fetchSharedBlob(key) {
+  const res = await fetch(`${SYNC_BASE}/${key}`, {
+    headers: { 'Accept': 'application/json' }
+  });
+  if (!res.ok) throw new Error('Code niet gevonden');
+  return res.json();
+}
+
+async function updateSharedBlob(key, data) {
+  const res = await fetch(`${SYNC_BASE}/${key}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Updaten mislukt');
+}
+
+async function pushMySlot() {
+  if (!share || !share.enabled || !share.key) return;
+  try {
+    let blob;
+    try { blob = await fetchSharedBlob(share.key); }
+    catch (e) { blob = { slots: {} }; }
+    if (!blob.slots) blob.slots = {};
+    blob.slots[deviceId] = {
+      players: players,
+      scores: scores,
+      drives: drives,
+      currentHole: currentHole,
+      teamName: players ? players.join(' & ') : '',
+      lastUpdate: new Date().toISOString()
+    };
+    await updateSharedBlob(share.key, blob);
+  } catch (e) {
+    console.log('Sync error:', e.message);
+  }
+}
+
+let pushTimer = null;
+function schedulePush() {
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushMySlot, 1200);
+}
+
+function saveAllAndSync() {
+  saveAll();
+  schedulePush();
 }
 
 function diffLabel(score, par) {
@@ -209,6 +287,24 @@ function renderSetup() {
     b.classList.toggle('active', c === setupCount);
   });
   renderPlayerInputs();
+  renderShareSetup();
+}
+
+function renderShareSetup() {
+  const toggle = $('#share-toggle');
+  const opts = $('#share-options');
+  const input = $('#share-key-input');
+  const status = $('#share-status');
+  toggle.checked = !!(share && share.enabled);
+  opts.classList.toggle('hidden', !toggle.checked);
+  input.value = (share && share.key) ? share.key : '';
+  status.classList.add('hidden');
+  status.textContent = '';
+  if (share && share.enabled && share.key) {
+    status.classList.remove('hidden');
+    status.classList.remove('error');
+    status.innerHTML = `<strong>Code actief:</strong> ${share.key}<br>Deel deze code met je golfmaatje.`;
+  }
 }
 
 function renderPlayerInputs() {
@@ -239,10 +335,18 @@ function startRoundFromSetup() {
     validNames.push(n);
   }
   players = validNames;
+
+  // share state from form
+  const enabled = $('#share-toggle').checked;
+  const keyInput = $('#share-key-input').value.trim();
+  share = { enabled: enabled, key: enabled && keyInput ? keyInput : null };
+
   saveAll();
   renderTeamCard();
   renderHoleGrid();
+  updateOtherCardVisibility();
   showScreen('start');
+  if (share.enabled && share.key) schedulePush();
 }
 
 // ===== Team card =====
@@ -252,6 +356,106 @@ function renderTeamCard() {
     return;
   }
   $('#team-names').textContent = players.join(' · ');
+}
+
+function updateOtherCardVisibility() {
+  const card = $('#other-card-link');
+  if (share && share.enabled && share.key) {
+    card.classList.remove('hidden');
+    $('#bvo-sub').textContent = `Deelcode: ${share.key} – tik om bij te werken`;
+  } else {
+    card.classList.add('hidden');
+  }
+}
+
+// ===== Bekijk andere flight =====
+async function showOther() {
+  showScreen('other');
+  $('#other-sub').textContent = 'Bijwerken...';
+  $('#other-strokes').textContent = '—';
+  $('#other-vs-par').textContent = '—';
+  $('#other-par-line').textContent = '';
+  $('#other-current').textContent = '—';
+  $('#other-table').innerHTML = '';
+
+  if (!share || !share.key) {
+    $('#other-sub').textContent = 'Geen deelcode ingesteld';
+    return;
+  }
+
+  try {
+    const blob = await fetchSharedBlob(share.key);
+    const slots = blob.slots || {};
+    const others = Object.entries(slots).filter(([id]) => id !== deviceId);
+    if (others.length === 0) {
+      $('#other-sub').textContent = 'Nog geen andere flight actief op deze code';
+      return;
+    }
+    // First other slot
+    const [, slot] = others[0];
+    renderOtherSlot(slot);
+  } catch (e) {
+    $('#other-sub').textContent = 'Ophalen mislukt: ' + e.message;
+    const status = $('#other-table');
+    status.innerHTML = '<tr><td>Probeer "Vernieuwen" opnieuw.</td></tr>';
+  }
+}
+
+function renderOtherSlot(slot) {
+  const otherPlayers = Array.isArray(slot.players) ? slot.players : [];
+  const otherScores = slot.scores || {};
+  const otherDrives = slot.drives || {};
+
+  $('#other-title').textContent = slot.teamName || (otherPlayers.length ? otherPlayers.join(' & ') : 'Andere flight');
+
+  const playedHoles = HOLES.filter(h => otherScores[h.n] != null);
+  const strokes = playedHoles.reduce((s, h) => s + otherScores[h.n], 0);
+  const parSum = playedHoles.reduce((s, h) => s + h.par, 0);
+  const d = strokes - parSum;
+
+  $('#other-sub').textContent = playedHoles.length === 0
+    ? 'Nog geen holes gespeeld'
+    : `${playedHoles.length} ${playedHoles.length === 1 ? 'hole' : 'holes'} gespeeld`;
+
+  $('#other-strokes').textContent = strokes || '0';
+  const vp = $('#other-vs-par');
+  vp.classList.remove('under', 'over');
+  if (playedHoles.length === 0) vp.textContent = '—';
+  else if (d === 0) vp.textContent = 'Par';
+  else if (d < 0) { vp.textContent = d.toString(); vp.classList.add('under'); }
+  else { vp.textContent = '+' + d; vp.classList.add('over'); }
+  $('#other-par-line').textContent = parSum ? `Par van gespeelde holes: ${parSum}` : '';
+
+  if (slot.currentHole) {
+    const ch = HOLES.find(h => h.n === slot.currentHole);
+    if (ch) {
+      $('#other-current').textContent = `Hole ${ch.n} · Par ${ch.par}`;
+    }
+  } else {
+    $('#other-current').textContent = '—';
+  }
+
+  // Tabel
+  const table = $('#other-table');
+  if (playedHoles.length === 0) {
+    table.innerHTML = '<tr><td>Nog geen scores ingevuld.</td></tr>';
+  } else {
+    let html = '<thead><tr><th>Hole</th><th>Par</th><th>Slagen</th><th>+/-</th><th>Drive</th></tr></thead><tbody>';
+    playedHoles.forEach(h => {
+      const s = otherScores[h.n];
+      const diff = s - h.par;
+      let diffCell = 'E';
+      let cls = '';
+      if (diff < 0) { diffCell = diff.toString(); cls = 'under-cell'; }
+      else if (diff > 0) { diffCell = '+' + diff; cls = 'over-cell'; }
+      const driveIdx = otherDrives[h.n];
+      const driveName = (driveIdx != null && otherPlayers[driveIdx]) ? otherPlayers[driveIdx] : '—';
+      html += `<tr><td>${h.n}</td><td>${h.par}</td><td>${s}</td><td class="${cls}">${diffCell}</td><td>${driveName}</td></tr>`;
+    });
+    html += `<tr class="total-row"><td>Totaal</td><td>${parSum}</td><td>${strokes}</td><td colspan="2">${d === 0 ? 'Par' : (d > 0 ? '+' + d : d)}</td></tr>`;
+    html += '</tbody>';
+    table.innerHTML = html;
+  }
 }
 
 function renderHoleGrid() {
@@ -334,7 +538,7 @@ function adjustScore(delta) {
   if (cur < 1) cur = 1;
   if (cur > 15) cur = 15;
   scores[h.n] = cur;
-  saveAll();
+  saveAllAndSync();
   renderScoreCounter();
 }
 
@@ -342,7 +546,7 @@ function resetAllScores() {
   if (!confirm('Alle scores én drives wissen?')) return;
   scores = {};
   drives = {};
-  saveAll();
+  saveAllAndSync();
   renderHoleGrid();
 }
 
@@ -367,7 +571,7 @@ function renderDrivesChips() {
       } else {
         drives[currentHole] = idx;
       }
-      saveAll();
+      saveAllAndSync();
       renderDrivesChips();
     });
     box.appendChild(chip);
@@ -411,6 +615,7 @@ function openHole(n) {
   renderDrivesChips();
   showScreen('hole');
   setTimeout(initGpsMap, 60);
+  schedulePush();
 }
 
 // ===== Resultaat =====
@@ -485,6 +690,7 @@ function renderResult() {
 function gotoStart() {
   cleanupGps();
   renderTeamCard();
+  updateOtherCardVisibility();
   renderHoleGrid();
   showScreen('start');
 }
@@ -525,6 +731,36 @@ $('#btn-edit-team').addEventListener('click', () => {
   showScreen('setup');
 });
 
+// Share setup
+$('#share-toggle').addEventListener('change', e => {
+  $('#share-options').classList.toggle('hidden', !e.target.checked);
+});
+
+$('#btn-new-key').addEventListener('click', async () => {
+  const btn = $('#btn-new-key');
+  const status = $('#share-status');
+  btn.disabled = true;
+  btn.textContent = '...';
+  status.classList.remove('hidden', 'error');
+  status.textContent = 'Code aanmaken...';
+  try {
+    const id = await createSharedBlob();
+    $('#share-key-input').value = id;
+    status.innerHTML = `<strong>Nieuwe code:</strong> ${id}<br>Deel deze met je golfmaatje (kopieer + verstuur).`;
+  } catch (err) {
+    status.classList.add('error');
+    status.textContent = 'Aanmaken mislukt: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Nieuw';
+  }
+});
+
+// Bekijk andere
+$('#btn-view-other').addEventListener('click', showOther);
+$('#btn-refresh-other').addEventListener('click', showOther);
+$('#btn-back-from-other').addEventListener('click', gotoStart);
+
 // Swipe op hole detail (alleen horizontaal, en niet op de GPS-kaart)
 let touchStartX = 0;
 let touchStartY = 0;
@@ -549,6 +785,9 @@ if (!players) {
   showScreen('setup');
 } else {
   renderTeamCard();
+  updateOtherCardVisibility();
   renderHoleGrid();
   showScreen('start');
+  // Push huidige state na load zodat andere kant ons ziet
+  if (share && share.enabled && share.key) schedulePush();
 }
