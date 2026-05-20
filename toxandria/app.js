@@ -275,7 +275,7 @@ function showScreen(name) {
 }
 
 // ===== Setup scherm =====
-let setupCount = 4;
+let setupCount = 2;
 let setupNames = ['', '', '', ''];
 
 function renderSetup() {
@@ -647,13 +647,11 @@ function renderResult() {
   if (!players) {
     drivesBox.innerHTML = '<p class="result-drives-note">Geen flight ingesteld.</p>';
   } else {
-    const minDrives = playedHoles.length >= 9 ? 2 : 1;
     players.forEach((name, idx) => {
       const count = playedHoles.filter(h => drives[h.n] === idx).length;
       const row = document.createElement('div');
       row.className = 'result-drive-row';
-      if (count < minDrives) row.classList.add('warn');
-      row.innerHTML = `<span class="name">${name}</span><span class="drive-count">${count} drive${count === 1 ? '' : 's'}</span>`;
+      row.innerHTML = `<span class="name">${name}</span><span class="drive-count">${count}&times;</span>`;
       drivesBox.appendChild(row);
     });
     const unassigned = playedHoles.filter(h => drives[h.n] == null).length;
@@ -661,7 +659,7 @@ function renderResult() {
       const note = document.createElement('p');
       note.className = 'result-drives-note';
       note.style.marginTop = '12px';
-      note.textContent = `${unassigned} ${unassigned === 1 ? 'hole heeft' : 'holes hebben'} nog geen drive toegewezen.`;
+      note.textContent = `${unassigned} ${unassigned === 1 ? 'hole heeft' : 'holes hebben'} nog geen afslag toegewezen.`;
       drivesBox.appendChild(note);
     }
   }
