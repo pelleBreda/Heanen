@@ -89,6 +89,43 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
 .btn-start:active { background: var(--primary-dark); }
 .btn-start:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* Flight selector */
+.flights-list { display: flex; flex-direction: column; gap: 10px; }
+.flight-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px var(--spacing); cursor: pointer; touch-action: manipulation;
+  display: flex; align-items: center; gap: 14px; transition: transform 0.1s, border-color 0.15s;
+}
+.flight-card:active { transform: scale(0.98); border-color: var(--primary); }
+.flight-card .flight-badge {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--primary); color: #fff; font-weight: 800; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.flight-card .flight-info { flex: 1; min-width: 0; }
+.flight-card .flight-title { font-weight: 800; color: var(--primary-dark); font-size: 0.95rem; }
+.flight-card .flight-players { color: var(--text-secondary); font-size: 0.8rem; margin-top: 2px; line-height: 1.3; }
+.flight-card .flight-arrow { color: var(--text-light); font-size: 1.3rem; }
+.intro-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px var(--spacing); margin-bottom: 16px; }
+.intro-card h2 { font-size: 1.2rem; color: var(--primary-dark); font-weight: 800; margin-bottom: 6px; }
+.intro-card p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.4; }
+
+/* Drive chips */
+.drives-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.drive-chip {
+  flex: 1 1 auto; min-width: 0; padding: 10px 12px; border: 2px solid var(--border);
+  border-radius: var(--radius-sm); background: var(--surface); color: var(--text-secondary);
+  font-weight: 700; font-size: 0.85rem; cursor: pointer; touch-action: manipulation;
+  text-align: center; transition: all 0.15s;
+}
+.drive-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.drive-hint { font-size: 0.75rem; color: var(--text-light); margin-top: 8px; font-style: italic; }
+
+/* Team score row (single shared score) */
+.team-score-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; }
+.team-score-label { font-weight: 700; font-size: 0.95rem; color: var(--primary-dark); }
+.team-score-info { font-size: 0.75rem; color: var(--text-light); margin-top: 2px; }
+
 /* Score banner */
 .score-banner {
   background: linear-gradient(135deg, var(--primary-dark), var(--primary));
@@ -276,46 +313,11 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
 </div>
 
 <div class="screen" id="setupScreen">
-  <div class="setup-card">
-    <h2>Scorekaart De Haenen</h2>
-    <p>Stel je ronde in en ga spelen</p>
-
-    <div class="form-group">
-      <label>Aantal spelers</label>
-      <div class="player-count-btns" id="countBtns">
-        <button class="player-count-btn" data-count="1">1</button>
-        <button class="player-count-btn active" data-count="2">2</button>
-        <button class="player-count-btn" data-count="3">3</button>
-        <button class="player-count-btn" data-count="4">4</button>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Hoofdspeler</label>
-      <input type="text" id="mainPlayer" placeholder="Jouw naam" autocomplete="off">
-    </div>
-
-    <div class="co-players" id="coPlayersSection">
-      <div class="form-group">
-        <label>Medespeler 1</label>
-        <input type="text" class="co-player-input" placeholder="Naam" autocomplete="off">
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label>Lus</label>
-      <div class="lus-btns" id="lusBtns">
-        <button class="lus-btn active" data-lus="1">
-          Lus 1<div class="lus-sub">Hole 1–9</div>
-        </button>
-        <button class="lus-btn" data-lus="2">
-          Lus 2<div class="lus-sub">Hole 10–18</div>
-        </button>
-      </div>
-    </div>
-
-    <button class="btn-start" id="btnStart">Start ronde</button>
+  <div class="intro-card">
+    <h2>Golfdag De Haenen</h2>
+    <p>Texas Scramble &middot; donderdag 18 juni. Kies je flight om te beginnen.</p>
   </div>
+  <div class="flights-list" id="flightsList"></div>
 </div>
 
 <div class="screen" id="overviewScreen">
@@ -330,7 +332,15 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
 <script>
-const PLAYER_COLORS = ['#2e86de', '#e67e22', '#8e44ad', '#27ae60'];
+const FLIGHTS = [
+  { n: 1, players: ['Pelle Verkooijen', 'Geoffrey Woodrow', 'Egbert de Groot', 'Elske Zomer'] },
+  { n: 2, players: ['Joost Dionisius', 'Martine de Voort', 'Piet Hein Hillen'] },
+  { n: 3, players: ['Joop van Berkel', 'Linda Küppers', 'Ingeborg Duijts', 'Paul Gerritse'] },
+  { n: 4, players: ['Robert Sintnicolaas', 'Marjolein van Zundert', 'Pim Susijn', 'John van Baaren'] },
+  { n: 5, players: ['Margareta Mignot-Haenen', 'Gite Bright-van der Sluis', 'Daniël Verstraten', 'Pieter van de Kerkhof'] },
+  { n: 6, players: ['Thea Kremers', 'Victor ten Kate', 'Jos de Kerf', 'Zoë Hoetjes'] },
+  { n: 7, players: ['Charles van der Voort', 'Daniëlle Muller', 'Ed Mulderink', 'Roelof Zomer'] }
+];
 
 const ALL_HOLES = [
   { hole:1,  par:4, si:7,  white:365, yellow:349, blue:328, red:320, orange:261, yt:'DpVETX1D_fs' },
@@ -353,77 +363,54 @@ const ALL_HOLES = [
   { hole:18, par:4, si:8,  white:321, yellow:302, blue:294, red:261, orange:218, yt:'Ou_jgHuNqC0' }
 ];
 
-const LOCAL_KEY = 'haenen_scorekaart';
-let config = null; // { players: ['Pelle','Joop'], lus: 1 }
-let holes = [];
-let scores = {}; // { 'Pelle': { 10: 4, 11: 5 }, 'Joop': { ... } }
+const LOCAL_KEY = 'haenen_scorekaart_v2';
+let config = null; // { flightNum, players: [...] }
+let scores = {};   // { 1: 4, 2: 5, ... } gezamenlijke score per hole
+let drives = {};   // { 1: 'Pelle Verkooijen', ... } wie afsloeg
+const holes = ALL_HOLES;
 
-// --- Setup ---
-let selectedCount = 2;
-let selectedLus = 1;
+function firstName(name) { return name.trim().split(/\s+/)[0]; }
 
-document.getElementById('countBtns').onclick = e => {
-  const btn = e.target.closest('.player-count-btn');
-  if (!btn) return;
-  selectedCount = parseInt(btn.dataset.count);
-  document.querySelectorAll('.player-count-btn').forEach(b => b.classList.toggle('active', b === btn));
-  renderCoPlayers();
-};
-
-document.getElementById('lusBtns').onclick = e => {
-  const btn = e.target.closest('.lus-btn');
-  if (!btn) return;
-  selectedLus = parseInt(btn.dataset.lus);
-  document.querySelectorAll('.lus-btn').forEach(b => b.classList.toggle('active', b === btn));
-};
-
-function renderCoPlayers() {
-  const section = document.getElementById('coPlayersSection');
-  const coCount = selectedCount - 1;
-  if (coCount === 0) {
-    section.innerHTML = '';
-    return;
-  }
-  let html = '';
-  for (let i = 1; i <= coCount; i++) {
-    html += `<div class="form-group">
-      <label>Medespeler ${i}</label>
-      <input type="text" class="co-player-input" placeholder="Naam" autocomplete="off">
-    </div>`;
-  }
-  section.innerHTML = html;
+// --- Flight selectie ---
+function renderFlightsList() {
+  const list = document.getElementById('flightsList');
+  list.innerHTML = FLIGHTS.map(f => `
+    <div class="flight-card" onclick="selectFlight(${f.n})">
+      <div class="flight-badge">${f.n}</div>
+      <div class="flight-info">
+        <div class="flight-title">Flight ${f.n}</div>
+        <div class="flight-players">${f.players.join(' &middot; ')}</div>
+      </div>
+      <div class="flight-arrow">&#8250;</div>
+    </div>
+  `).join('');
 }
 
-document.getElementById('btnStart').onclick = () => {
-  const mainName = document.getElementById('mainPlayer').value.trim();
-  if (!mainName) return;
-  const coInputs = document.querySelectorAll('.co-player-input');
-  const players = [mainName];
-  for (const input of coInputs) {
-    const name = input.value.trim();
-    if (!name) return;
-    players.push(name);
+function selectFlight(n) {
+  const f = FLIGHTS.find(x => x.n === n);
+  if (!f) return;
+  // Als er al een ronde bezig is voor deze flight, doorgaan; anders nieuwe ronde
+  if (config && config.flightNum === n && (Object.keys(scores).length || Object.keys(drives).length)) {
+    if (!confirm(`Doorgaan met de bestaande ronde van Flight ${n}?\n(Annuleer = ronde resetten.)`)) {
+      scores = {}; drives = {};
+    }
+  } else {
+    scores = {}; drives = {};
   }
-  config = { players, lus: selectedLus };
-  holes = selectedLus === 1 ? ALL_HOLES.slice(0, 9) : ALL_HOLES.slice(9);
-  scores = {};
-  players.forEach(p => {
-    scores[p] = {};
-    holes.forEach(h => { scores[p][h.hole] = h.par; });
-  });
+  config = { flightNum: f.n, players: f.players.slice() };
   saveLocal();
   startRound();
-};
+}
 
 // --- Persistence ---
-function saveLocal() { localStorage.setItem(LOCAL_KEY, JSON.stringify({ config, scores })); }
+function saveLocal() { localStorage.setItem(LOCAL_KEY, JSON.stringify({ config, scores, drives })); }
 function loadLocal() {
   try {
     const d = JSON.parse(localStorage.getItem(LOCAL_KEY));
-    if (d && d.config && d.config.players && d.config.players.length) {
+    if (d && d.config && d.config.flightNum && Array.isArray(d.config.players) && d.config.players.length) {
       config = d.config;
-      scores = d.scores;
-      holes = config.lus === 1 ? ALL_HOLES.slice(0, 9) : ALL_HOLES.slice(9);
+      scores = d.scores || {};
+      drives = d.drives || {};
       return true;
     }
   } catch(e) {}
@@ -431,12 +418,12 @@ function loadLocal() {
 }
 
 // --- Helpers ---
-function totalStrokes(player) { return holes.reduce((sum, h) => sum + (scores[player][h.hole] || h.par), 0); }
-function totalVsPar(player) { return totalStrokes(player) - holes.reduce((s, h) => s + h.par, 0); }
+function holesPlayed() { return holes.filter(h => scores[h.hole] != null).length; }
+function totalStrokes() { return holes.reduce((s, h) => s + (scores[h.hole] != null ? scores[h.hole] : 0), 0); }
+function playedParSum() { return holes.filter(h => scores[h.hole] != null).reduce((s, h) => s + h.par, 0); }
+function totalVsPar() { return totalStrokes() - playedParSum(); }
 function formatVsPar(n) { return n === 0 ? 'E' : (n > 0 ? '+' + n : String(n)); }
-function initial(name) { return name.charAt(0).toUpperCase(); }
 function ytThumb(id) { return `https://img.youtube.com/vi/${id}/mqdefault.jpg`; }
-function ytThumbHQ(id) { return `https://img.youtube.com/vi/${id}/hqdefault.jpg`; }
 function parClass(par) { return par === 3 ? 'par3-bg' : par === 5 ? 'par5-bg' : 'par4-bg'; }
 function scoreName(diff) {
   if (diff <= -3) return 'Albatross'; if (diff === -2) return 'Eagle'; if (diff === -1) return 'Birdie';
@@ -449,32 +436,6 @@ function scoreClass(score, par) {
   if (diff === 0) return 'score-par';
   if (diff === 1) return 'score-bogey';
   return 'score-double';
-}
-
-function matchPlayStatus() {
-  if (config.players.length !== 2) return null;
-  const [a, b] = config.players;
-  let wA = 0, wB = 0;
-  holes.forEach(h => {
-    const sA = scores[a][h.hole] || h.par;
-    const sB = scores[b][h.hole] || h.par;
-    if (sA < sB) wA++;
-    else if (sB < sA) wB++;
-  });
-  const diff = wA - wB;
-  if (diff === 0) return 'All Square';
-  if (diff > 0) return `${a} ${diff} UP`;
-  return `${b} ${-diff} UP`;
-}
-
-function holeWinnerLabel(hole) {
-  if (config.players.length !== 2) return '';
-  const [a, b] = config.players;
-  const sA = scores[a][hole] || 0;
-  const sB = scores[b][hole] || 0;
-  if (sA < sB) return `<span style="color:${PLAYER_COLORS[0]}">${initial(a)}</span>`;
-  if (sB < sA) return `<span style="color:${PLAYER_COLORS[1]}">${initial(b)}</span>`;
-  return '<span style="color:var(--text-light)">=</span>';
 }
 
 function showScreen(id) {
@@ -492,23 +453,27 @@ function startRound() {
 
 function renderBanner() {
   const banner = document.getElementById('scoreBanner');
-  let playersHtml = config.players.map((p, i) =>
-    `<div class="banner-player">
-      <div class="name${i === 0 ? ' main-player' : ''}">${p}</div>
-      <div class="total" style="color:${PLAYER_COLORS[i]}">${formatVsPar(totalVsPar(p))}</div>
-    </div>`
-  ).join('');
-
-  let matchHtml = '';
-  const mp = matchPlayStatus();
-  if (mp !== null) {
-    matchHtml = `<div class="banner-match">
-      <div class="match-status">${mp}</div>
-      <div class="match-label">Match Play</div>
+  const played = holesPlayed();
+  const total = totalStrokes();
+  const vp = totalVsPar();
+  banner.innerHTML = `
+    <div class="banner-players" style="justify-content:space-between;">
+      <div class="banner-player">
+        <div class="name">Holes</div>
+        <div class="total">${played}/${holes.length}</div>
+      </div>
+      <div class="banner-player">
+        <div class="name">Slagen</div>
+        <div class="total">${total || '—'}</div>
+      </div>
+      <div class="banner-player">
+        <div class="name">vs Par</div>
+        <div class="total" style="color:var(--accent-light)">${played === 0 ? '—' : formatVsPar(vp)}</div>
+      </div>
+    </div>
+    <div class="banner-match" style="text-align:center; padding-top:8px; border-top:1px solid rgba(255,255,255,0.15); margin-top:8px;">
+      <div class="match-label">Flight ${config.flightNum} &middot; ${config.players.length} spelers</div>
     </div>`;
-  }
-
-  banner.innerHTML = `<div class="banner-players">${playersHtml}</div>${matchHtml}`;
 }
 
 function renderOverview() {
@@ -517,11 +482,13 @@ function renderOverview() {
   grid.innerHTML = '';
 
   holes.forEach(h => {
-    const scoresHtml = config.players.map((p, i) => {
-      const s = scores[p][h.hole] || h.par;
-      return `<span class="player-score ${scoreClass(s, h.par)}">${initial(p)}: ${s}</span>`;
-    }).join('');
-    const winnerHtml = config.players.length === 2 ? `<span class="hole-winner">${holeWinnerLabel(h.hole)}</span>` : '';
+    const s = scores[h.hole];
+    const scoreHtml = s != null
+      ? `<span class="player-score ${scoreClass(s, h.par)}">Score: ${s}</span>`
+      : `<span class="player-score" style="background:var(--surface); color:var(--text-light);">— nog niet</span>`;
+    const driveHtml = drives[h.hole]
+      ? `<span class="player-score" style="background:var(--accent-light); color:var(--primary-dark);">Drive: ${firstName(drives[h.hole])}</span>`
+      : '';
 
     const card = document.createElement('div');
     card.className = 'hole-card';
@@ -539,7 +506,7 @@ function renderOverview() {
           <span style="color:#c8a415">&#9899; ${h.yellow}m</span>
           <span style="color:#2e86de">&#9899; ${h.blue}m</span>
         </div>
-        <div class="hole-card-scores">${scoresHtml}${winnerHtml}</div>
+        <div class="hole-card-scores">${scoreHtml}${driveHtml}</div>
       </div>
       <div class="hole-card-arrow">&#8250;</div>`;
     grid.appendChild(card);
@@ -561,20 +528,11 @@ function showHole(num) {
   const prevHole = holeIdx > 0 ? holes[holeIdx - 1].hole : null;
   const nextHole = holeIdx < holes.length - 1 ? holes[holeIdx + 1].hole : null;
 
-  const playerRows = config.players.map((p, i) => {
-    const s = scores[p][num] || h.par;
-    return `<div class="player-score-row">
-      <div>
-        <div class="player-label"><span class="player-dot" style="background:${PLAYER_COLORS[i]}"></span> ${p}</div>
-        <div class="player-score-info" id="scoreInfo_${i}">${scoreName(s - h.par)}</div>
-      </div>
-      <div class="score-input-controls">
-        <button class="score-btn" onclick="changeScore(${i},${num},-1)">-</button>
-        <div class="score-value" id="scoreVal_${i}">${s}</div>
-        <button class="score-btn" onclick="changeScore(${i},${num},1)">+</button>
-      </div>
-    </div>`;
-  }).join('');
+  const displayScore = scores[num] != null ? scores[num] : h.par;
+  const drivePlayer = drives[num] || null;
+  const driveChips = config.players.map((p, i) => `
+    <button class="drive-chip ${drivePlayer === p ? 'active' : ''}" data-player-idx="${i}" onclick="setDrive(${num}, ${i})">${p}</button>
+  `).join('');
 
   detail.innerHTML = `
     <div class="info-card">
@@ -590,8 +548,23 @@ function showHole(num) {
       </table>
     </div>
     <div class="info-card">
-      <div class="info-card-title">Score &middot; Par ${h.par}</div>
-      ${playerRows}
+      <div class="info-card-title">Score (team) &middot; Par ${h.par}</div>
+      <div class="team-score-row">
+        <div>
+          <div class="team-score-label">Aantal slagen</div>
+          <div class="team-score-info" id="teamScoreInfo">${scoreName(displayScore - h.par)}</div>
+        </div>
+        <div class="score-input-controls">
+          <button class="score-btn" onclick="changeScore(${num},-1)">-</button>
+          <div class="score-value" id="teamScoreVal">${displayScore}</div>
+          <button class="score-btn" onclick="changeScore(${num},1)">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-title">Wie heeft afgeslagen?</div>
+      <div class="drives-chips">${driveChips}</div>
+      <div class="drive-hint">Tik op de speler wiens afslag is gekozen. Nog een keer = ongedaan maken.</div>
     </div>
     <div class="info-card" style="padding:0; overflow:hidden;">
       <div style="padding:var(--spacing) var(--spacing) 8px;">
@@ -629,87 +602,80 @@ function showHole(num) {
   document.getElementById('backBtn').style.display = 'block';
   document.getElementById('backBtn').onclick = () => { cleanupGps(); showScreen('overviewScreen'); updateHeader('overview'); renderOverview(); };
   document.getElementById('headerTitle').textContent = `Hole ${h.hole} — Par ${h.par}`;
-  const subParts = config.players.map((p, i) => `${initial(p)}: ${formatVsPar(totalVsPar(p))}`);
-  document.getElementById('headerSubtitle').textContent = subParts.join(' | ');
+  document.getElementById('headerSubtitle').textContent = `Flight ${config.flightNum} · ${holesPlayed()}/${holes.length} holes · ${totalStrokes()} slagen`;
 }
 
 function showHoleClean(num) { cleanupGps(); showHole(num); }
 
-function changeScore(playerIdx, hole, delta) {
-  const p = config.players[playerIdx];
+function changeScore(hole, delta) {
   const h = holes.find(x => x.hole === hole);
-  const current = scores[p][hole] || h.par;
+  const current = scores[hole] != null ? scores[hole] : h.par;
   const next = current + delta;
   if (next < 1) return;
-  scores[p][hole] = next;
+  scores[hole] = next;
   saveLocal();
-  document.getElementById('scoreVal_' + playerIdx).textContent = next;
-  document.getElementById('scoreInfo_' + playerIdx).textContent = scoreName(next - h.par);
+  document.getElementById('teamScoreVal').textContent = next;
+  document.getElementById('teamScoreInfo').textContent = scoreName(next - h.par);
+}
+
+function setDrive(hole, playerIdx) {
+  const player = config.players[playerIdx];
+  if (drives[hole] === player) {
+    delete drives[hole];
+  } else {
+    drives[hole] = player;
+  }
+  saveLocal();
+  document.querySelectorAll('.drive-chip').forEach(c => {
+    const i = parseInt(c.dataset.playerIdx, 10);
+    c.classList.toggle('active', drives[hole] === config.players[i]);
+  });
 }
 
 // --- Summary ---
 function showSummary() {
   const screen = document.getElementById('summaryScreen');
+  const played = holesPlayed();
+  const total = totalStrokes();
+  const parPlayed = playedParSum();
   const parTotal = holes.reduce((s, h) => s + h.par, 0);
-  const lusLabel = config.lus === 1 ? 'Lus 1 (1–9)' : 'Lus 2 (10–18)';
+  const vp = totalVsPar();
 
-  // Find winner
-  const sorted = [...config.players].sort((a, b) => totalStrokes(a) - totalStrokes(b));
-  const best = totalStrokes(sorted[0]);
-  const isTie = config.players.length > 1 && totalStrokes(sorted[1]) === best;
-
-  let winnerText, winnerScore;
-  if (config.players.length === 1) {
-    winnerText = sorted[0];
-    winnerScore = `${best} (${formatVsPar(totalVsPar(sorted[0]))})`;
-  } else if (isTie) {
-    winnerText = 'Gelijkspel!';
-    winnerScore = `${best} (${formatVsPar(totalVsPar(sorted[0]))})`;
-  } else {
-    winnerText = `${sorted[0]} wint!`;
-    winnerScore = `${best} (${formatVsPar(totalVsPar(sorted[0]))})`;
-  }
-
-  const playerHeaders = config.players.map(p => `<th>${p}</th>`).join('');
   let rows = '';
   holes.forEach(h => {
-    const cells = config.players.map(p => `<td>${scores[p][h.hole] || h.par}</td>`).join('');
-    rows += `<tr><td>${h.hole}</td><td>${h.par}</td>${cells}</tr>`;
+    const s = scores[h.hole];
+    const drive = drives[h.hole] ? firstName(drives[h.hole]) : '—';
+    rows += `<tr><td>${h.hole}</td><td>${h.par}</td><td>${s != null ? s : '—'}</td><td>${drive}</td></tr>`;
   });
-  const totalCells = config.players.map(p => `<td>${totalStrokes(p)}</td>`).join('');
-  rows += `<tr class="total-row"><td>Totaal</td><td>${parTotal}</td>${totalCells}</tr>`;
-  const vpCells = config.players.map(p => `<td>${formatVsPar(totalVsPar(p))}</td>`).join('');
-  rows += `<tr class="total-row"><td>vs Par</td><td></td>${vpCells}</tr>`;
-
-  let matchHtml = '';
-  const mp = matchPlayStatus();
-  if (mp !== null) {
-    matchHtml = `<div style="font-size:0.9rem; margin-top:8px; opacity:0.8">Match Play: ${mp}</div>`;
+  rows += `<tr class="total-row"><td>Totaal</td><td>${parTotal}</td><td>${total}</td><td></td></tr>`;
+  if (played > 0) {
+    rows += `<tr class="total-row"><td>vs Par (gespeeld)</td><td>${parPlayed}</td><td>${formatVsPar(vp)}</td><td></td></tr>`;
   }
 
   screen.innerHTML = `
     <div class="summary-header">
-      <div class="winner-name">${winnerText}</div>
-      <div class="winner-score">${winnerScore}</div>
-      <div class="winner-sub">${lusLabel} &middot; De Haenen</div>
-      ${matchHtml}
+      <div class="winner-name">Flight ${config.flightNum}</div>
+      <div class="winner-score">${total || 0}</div>
+      <div class="winner-sub">slagen &middot; ${played}/${holes.length} holes${played > 0 ? ' &middot; ' + formatVsPar(vp) + ' vs par' : ''}</div>
+      <div style="font-size:0.8rem; margin-top:10px; opacity:0.75; line-height:1.4;">${config.players.join(' &middot; ')}</div>
     </div>
     <div class="info-card" style="padding:0; overflow:hidden;">
       <table class="summary-table">
-        <thead><tr><th>Hole</th><th>Par</th>${playerHeaders}</tr></thead>
+        <thead><tr><th>Hole</th><th>Par</th><th>Score</th><th>Drive</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
     <button class="btn-back" onclick="showScreen('overviewScreen'); updateHeader('overview'); renderOverview();">Terug naar overzicht</button>
-    <button class="btn-reset" onclick="resetRound()">Nieuwe ronde</button>`;
+    <button class="btn-reset" onclick="resetRound()">Andere flight kiezen</button>`;
   showScreen('summaryScreen');
   updateHeader('summary');
 }
 
 function resetRound() {
-  if (!confirm('Weet je zeker dat je opnieuw wilt beginnen?')) return;
+  if (!confirm('Weet je zeker dat je opnieuw wilt beginnen? Alle scores van deze flight worden gewist.')) return;
   localStorage.removeItem(LOCAL_KEY);
-  config = null; scores = {};
+  config = null; scores = {}; drives = {};
+  renderFlightsList();
   showScreen('setupScreen');
   updateHeader('setup');
 }
@@ -722,16 +688,15 @@ function updateHeader(screen) {
   if (screen === 'setup') {
     title.textContent = 'Scorekaart'; sub.textContent = 'De Haenen';
   } else if (screen === 'overview') {
-    const lusLabel = config.lus === 1 ? 'Lus 1 (1–9)' : 'Lus 2 (10–18)';
-    title.textContent = config.players.join(' & '); sub.textContent = `${lusLabel} · De Haenen`;
+    title.textContent = `Flight ${config.flightNum}`;
+    sub.textContent = `${holesPlayed()}/${holes.length} holes · ${totalStrokes()} slagen`;
     btn.style.display = 'block';
-    btn.onclick = () => { if (confirm('Terug naar het hoofdmenu?')) { resetRound(); } };
+    btn.onclick = () => { if (confirm('Terug naar het flight-overzicht? Je scores blijven bewaard.')) { renderFlightsList(); showScreen('setupScreen'); updateHeader('setup'); } };
   } else if (screen === 'summary') {
     btn.style.display = 'block';
     btn.onclick = () => { showScreen('overviewScreen'); updateHeader('overview'); renderOverview(); };
-    title.textContent = 'Resultaat';
-    const subParts = config.players.map(p => `${initial(p)}: ${formatVsPar(totalVsPar(p))}`);
-    sub.textContent = subParts.join(' | ');
+    title.textContent = `Flight ${config.flightNum} — Resultaat`;
+    sub.textContent = `${totalStrokes()} slagen · ${holesPlayed()}/${holes.length} holes`;
   }
 }
 
@@ -854,10 +819,12 @@ document.getElementById('lockCode').addEventListener('keydown', e => {
 });
 
 function initApp() {
+  renderFlightsList();
   if (loadLocal() && config) {
     startRound();
   } else {
     showScreen('setupScreen');
+    updateHeader('setup');
   }
 }
 
