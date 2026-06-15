@@ -240,7 +240,15 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
 }
 .gps-distance-overlay .dist-value { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; }
 .gps-distance-overlay .dist-unit { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; }
-.gps-hint { font-size: 0.7rem; color: var(--text-light); text-align: center; margin-top: 8px; font-style: italic; }
+.gps-hint { font-size: 0.7rem; color: var(--text-light); text-align: center; margin: 8px var(--spacing) var(--spacing); font-style: italic; }
+.gps-center-btn {
+  position: absolute; bottom: 12px; right: 12px; z-index: 500;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(255,255,255,0.95); border: none; color: var(--primary-dark);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3); cursor: pointer; touch-action: manipulation;
+}
+.gps-center-btn:active { background: rgba(220,220,220,0.95); }
 #gpsMap { z-index: 1; }
   </style>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -320,6 +328,7 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
 <div class="screen" id="summaryScreen"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate.js"></script>
 <script>
 const PLAYER_COLORS = ['#2e86de', '#e67e22', '#8e44ad', '#27ae60'];
 
@@ -594,8 +603,19 @@ function showHole(num) {
           <div class="dist-value" id="gpsDistance">--</div>
           <div class="dist-unit">meter</div>
         </div>
+        <button id="gpsCenterBtn" class="gps-center-btn" aria-label="Centreer op mijn locatie" title="Centreer op mijn locatie">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"></circle>
+            <circle cx="12" cy="12" r="3" fill="currentColor"></circle>
+            <line x1="12" y1="1" x2="12" y2="4"></line>
+            <line x1="12" y1="20" x2="12" y2="23"></line>
+            <line x1="1" y1="12" x2="4" y2="12"></line>
+            <line x1="20" y1="12" x2="23" y2="12"></line>
+          </svg>
+        </button>
         <div id="gpsMap" style="height:320px; background:#ddd;"></div>
       </div>
+      <p class="gps-hint">Versleep om te richten &middot; 2 vingers draaien &middot; tik kompas voor N&uarr;</p>
     </div>
     <div class="hole-nav">
       <button class="hole-nav-btn" onclick="showHoleClean(${prevHole})" ${!prevHole?'disabled':''}>&larr; Hole ${prevHole||''}</button>
@@ -753,7 +773,21 @@ function initGpsMap() {
 
   const initCenter = gpsUserPos || COURSE_CENTER;
 
-  gpsMap = L.map('gpsMap', { center: initCenter, zoom: 18, zoomControl: true, attributionControl: false });
+  gpsMap = L.map('gpsMap', {
+    center: initCenter, zoom: 18, zoomControl: true, attributionControl: false,
+    rotate: true, touchRotate: true,
+    rotateControl: { closeOnZeroBearing: false, position: 'topleft' },
+    bearing: 0
+  });
+
+  const centerBtn = document.getElementById('gpsCenterBtn');
+  if (centerBtn) {
+    centerBtn.onclick = () => {
+      if (!gpsMap) return;
+      if (gpsUserPos) gpsMap.setView(gpsUserPos, 18, { animate: true });
+      else alert('Nog geen GPS-positie. Wacht tot het blauwe bolletje verschijnt.');
+    };
+  }
 
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 20
