@@ -617,9 +617,8 @@ function renderOverview() {
       <img class="hole-card-thumb" src="${ytThumb(h.yt)}" alt="Hole ${h.hole}" loading="lazy">
       <div class="hole-card-info">
         <div class="hole-card-distances">
-          <span style="color:#666">&#9898; ${h.white}m</span>
           <span style="color:#c8a415">&#9899; ${h.yellow}m</span>
-          <span style="color:#2e86de">&#9899; ${h.blue}m</span>
+          <span style="color:#e74c3c">&#9899; ${h.red}m</span>
         </div>
         <div class="hole-card-scores">${scoreHtml}${driveHtml}</div>
       </div>
@@ -634,9 +633,8 @@ function showHole(num) {
   const detail = document.getElementById('detailScreen');
 
   const tees = [
-    { name:'Wit', cls:'tee-white', d:h.white }, { name:'Geel', cls:'tee-yellow', d:h.yellow },
-    { name:'Blauw', cls:'tee-blue', d:h.blue }, { name:'Rood', cls:'tee-red', d:h.red },
-    { name:'Oranje', cls:'tee-orange', d:h.orange }
+    { name:'Geel (heren)', cls:'tee-yellow', d:h.yellow },
+    { name:'Rood (dames)', cls:'tee-red', d:h.red }
   ];
 
   const holeIdx = holes.indexOf(h);
