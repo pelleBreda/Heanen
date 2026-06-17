@@ -396,20 +396,6 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
   </div>
 </header>
 
-<div class="screen active" id="lockScreen">
-  <div class="lock-bg">
-    <div class="lock-logo">⛳</div>
-    <div class="lock-title">De Haenen</div>
-    <div class="lock-date">Golfdag · 18 juni</div>
-    <div class="lock-input-wrap">
-      <input type="password" id="lockCode" class="lock-input" placeholder="Toegangscode" autocomplete="off">
-      <button class="lock-btn" id="btnUnlock">Ga verder</button>
-      <div class="lock-error" id="lockError">Ongeldige code</div>
-    </div>
-    <div class="lock-footer">Texas Scramble · 27 spelers · 7 flights</div>
-  </div>
-</div>
-
 <div class="screen" id="setupScreen">
   <div class="intro-card">
     <div class="intro-date">Donderdag 18 juni</div>
@@ -433,10 +419,10 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
 <script>
 const FLIGHTS = [
   { n: 1, players: ['Pelle Verkooijen', 'Geoffrey Woodrow', 'Egbert de Groot', 'Elske Zomer'] },
-  { n: 2, players: ['Joost Dionisius', 'Martine de Voort', 'Piet Hein Hillen'] },
-  { n: 3, players: ['Joop van Berkel', 'Linda Küppers', 'Ingeborg Duijts', 'Paul Gerritse'] },
-  { n: 4, players: ['Robert Sintnicolaas', 'Marjolein van Zundert', 'Pim Susijn', 'John van Baaren'] },
-  { n: 5, players: ['Margareta Mignot-Haenen', 'Gite Bright-van der Sluis', 'Daniël Verstraten', 'Pieter van de Kerkhof'] },
+  { n: 2, players: ['Joost Dionisius', 'Martine de Voort', 'Ditmar Verweij'] },
+  { n: 3, players: ['Joop van Berkel', 'Linda Küppers', 'Ingeborg Duijts'] },
+  { n: 4, players: ['Robert Sintnicolaas', 'Pim Susijn', 'John van Baaren'] },
+  { n: 5, players: ['Margareta Mignot-Haenen', 'Gite Bright-van der Sluis', 'Pieter van de Kerkhof', 'Piet Hein Hillen'] },
   { n: 6, players: ['Thea Kremers', 'Victor ten Kate', 'Jos de Kerf', 'Zoë Hoetjes'] },
   { n: 7, players: ['Charles van der Voort', 'Daniëlle Muller', 'Ed Mulderink', 'Roelof Zomer'] }
 ];
@@ -1090,28 +1076,6 @@ function initGpsMap() {
   }
 }
 
-// --- Lock screen ---
-const ACCESS_CODE = 'PELLE!';
-const LOCK_KEY = 'haenen_unlocked';
-
-function checkUnlocked() {
-  return sessionStorage.getItem(LOCK_KEY) === '1';
-}
-
-document.getElementById('btnUnlock').onclick = () => {
-  const input = document.getElementById('lockCode').value.trim();
-  if (input === ACCESS_CODE) {
-    sessionStorage.setItem(LOCK_KEY, '1');
-    initApp();
-  } else {
-    document.getElementById('lockError').style.display = 'block';
-  }
-};
-
-document.getElementById('lockCode').addEventListener('keydown', e => {
-  if (e.key === 'Enter') document.getElementById('btnUnlock').click();
-});
-
 function initApp() {
   renderFlightsList();
   if (loadLocal() && config) {
@@ -1123,11 +1087,7 @@ function initApp() {
 }
 
 // --- Init ---
-if (checkUnlocked()) {
-  initApp();
-} else {
-  showScreen('lockScreen');
-}
+initApp();
 </script>
 </body>
 </html>
