@@ -120,6 +120,17 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
 .intro-card .intro-date { font-size: 0.75rem; color: var(--accent-light); text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; margin-bottom: 4px; position: relative; }
 .intro-card .intro-mode { color: rgba(255,255,255,0.92); font-size: 0.9rem; line-height: 1.4; position: relative; margin-top: 6px; }
 .intro-card .intro-mode strong { color: var(--accent-light); }
+.intro-card .intro-rules { list-style: none; margin-top: 12px; padding: 0; position: relative; }
+.intro-card .intro-rules li {
+  position: relative; padding: 6px 0 6px 20px;
+  color: rgba(255,255,255,0.92); font-size: 0.85rem; line-height: 1.45;
+}
+.intro-card .intro-rules li + li { border-top: 1px solid rgba(255,255,255,0.12); }
+.intro-card .intro-rules li::before {
+  content: '⛳'; position: absolute; left: 0; top: 6px;
+  font-size: 0.8rem; color: var(--accent-light);
+}
+.intro-card .intro-rules strong { color: var(--accent-light); }
 
 /* Lock screen */
 #lockScreen.screen { padding: 0; }
@@ -400,7 +411,14 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
   <div class="intro-card">
     <div class="intro-date">Donderdag 18 juni</div>
     <h2>Welkom op De Haenen ⛳</h2>
-    <div class="intro-mode"><strong>Texas Scramble</strong> · 9 holes (10–18) · iedereen slaat af, beste bal wordt gekozen. Kies hieronder je flight.</div>
+    <div class="intro-mode"><strong>Texas Scramble</strong> · 9 holes (10–18) · iedereen slaat af, beste bal wordt gekozen.</div>
+    <ul class="intro-rules">
+      <li>Iedereen slaat af en speelt vervolgens met 3 ballen door (de flights van 3 deelnemers mogen ook met 3 ballen doorspelen).</li>
+      <li>Iedereen put.</li>
+      <li>Iedereen heeft ten minste 2 afslagen (bij de flights van 3 deelnemers heeft iedereen 3 afslagen — gelet op de relatief goede handicaps van de 3-ballen is dat wel eerlijk).</li>
+      <li>Heren slaan van <strong>geel</strong>, dames slaan van <strong>rood</strong>.</li>
+    </ul>
+    <div class="intro-mode" style="margin-top:10px;">Kies hieronder je flight.</div>
   </div>
   <div class="flights-list" id="flightsList"></div>
 </div>
