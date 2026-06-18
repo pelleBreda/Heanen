@@ -132,6 +132,32 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
 }
 .intro-card .intro-rules strong { color: var(--accent-light); }
 
+/* QR share card */
+.qr-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 18px var(--spacing); margin-bottom: 16px; text-align: center;
+}
+.qr-card .qr-title {
+  font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--text-light); margin-bottom: 4px;
+}
+.qr-card .qr-heading {
+  font-size: 1.05rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 12px;
+}
+.qr-card .qr-img {
+  width: 200px; height: 200px; display: block; margin: 0 auto;
+  border-radius: var(--radius-sm); background: #fff; padding: 8px;
+  border: 1px solid var(--border);
+}
+.qr-card .qr-sub {
+  font-size: 0.8rem; color: var(--text-secondary); margin-top: 10px; line-height: 1.4;
+}
+.qr-card .qr-url {
+  display: inline-block; margin-top: 6px; font-size: 0.75rem;
+  color: var(--primary); font-weight: 700; word-break: break-all;
+  text-decoration: none;
+}
+
 /* Lock screen */
 #lockScreen.screen { padding: 0; }
 .lock-bg {
@@ -415,10 +441,19 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
     <ul class="intro-rules">
       <li>Iedereen slaat af en speelt vervolgens met 3 ballen door (de flights van 3 deelnemers mogen ook met 3 ballen doorspelen).</li>
       <li>Iedereen put.</li>
-      <li>Iedereen heeft ten minste 2 afslagen (bij de flights van 3 deelnemers heeft iedereen 3 afslagen — gelet op de relatief goede handicaps van de 3-ballen is dat wel eerlijk).</li>
+      <li>Iedereen heeft ten minste 2 afslagen (bij de flights van 3 deelnemers heeft iedereen 3 afslagen).</li>
       <li>Heren slaan van <strong>geel</strong>, dames slaan van <strong>rood</strong>.</li>
     </ul>
     <div class="intro-mode" style="margin-top:10px;">Kies hieronder je flight.</div>
+  </div>
+  <div class="qr-card">
+    <div class="qr-title">Deel de app</div>
+    <div class="qr-heading">Scan & speel mee 📱</div>
+    <img class="qr-img"
+         src="https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=0&data=https%3A%2F%2Fpellebreda.github.io%2FHeanen%2Fhaenen%2F"
+         alt="QR-code naar de Haenen scorekaart">
+    <div class="qr-sub">Scan met je telefoon om de scorekaart te openen.</div>
+    <a class="qr-url" href="https://pellebreda.github.io/Heanen/haenen/" target="_blank" rel="noopener">pellebreda.github.io/Heanen/haenen</a>
   </div>
   <div class="flights-list" id="flightsList"></div>
 </div>
