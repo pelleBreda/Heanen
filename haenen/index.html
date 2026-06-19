@@ -433,6 +433,20 @@ header .subtitle { font-size: 0.75rem; opacity: 0.7; font-weight: 400; }
   </div>
 </header>
 
+<div class="screen" id="lockScreen">
+  <div class="lock-bg">
+    <div class="lock-logo">⛳</div>
+    <div class="lock-title">De Haenen</div>
+    <div class="lock-date">Scorekaart · 18 juni</div>
+    <div class="lock-input-wrap">
+      <input type="text" id="lockInput" class="lock-input" placeholder="TOEGANGSCODE" autocapitalize="characters" autocomplete="off" spellcheck="false">
+      <button class="lock-btn" id="lockBtn">Ontgrendelen</button>
+      <div class="lock-error" id="lockError">Onjuiste code. Probeer opnieuw.</div>
+    </div>
+    <div class="lock-footer">Toegangscode nodig? Vraag Pelle.</div>
+  </div>
+</div>
+
 <div class="screen" id="setupScreen">
   <div class="intro-card">
     <div class="intro-date">Donderdag 18 juni</div>
@@ -1127,13 +1141,55 @@ function initGpsMap() {
   }
 }
 
-function initApp() {
+// --- Lock screen ---
+const ACCESS_CODE = 'PELLE!';
+const UNLOCK_KEY = 'haenen_unlocked_v1';
+
+function isUnlocked() { return localStorage.getItem(UNLOCK_KEY) === '1'; }
+function markUnlocked() { localStorage.setItem(UNLOCK_KEY, '1'); }
+
+function showLockScreen() {
+  const headerEl = document.querySelector('header');
+  if (headerEl) headerEl.style.display = 'none';
+  showScreen('lockScreen');
+  const input = document.getElementById('lockInput');
+  const btn = document.getElementById('lockBtn');
+  const error = document.getElementById('lockError');
+
+  function tryUnlock() {
+    const value = (input.value || '').trim();
+    if (value === ACCESS_CODE) {
+      markUnlocked();
+      error.style.display = 'none';
+      if (headerEl) headerEl.style.display = '';
+      proceedAfterUnlock();
+    } else {
+      error.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  }
+
+  btn.onclick = tryUnlock;
+  input.onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); tryUnlock(); } };
+  setTimeout(() => input && input.focus(), 50);
+}
+
+function proceedAfterUnlock() {
   renderFlightsList();
   if (loadLocal() && config) {
     startRound();
   } else {
     showScreen('setupScreen');
     updateHeader('setup');
+  }
+}
+
+function initApp() {
+  if (!isUnlocked()) {
+    showLockScreen();
+  } else {
+    proceedAfterUnlock();
   }
 }
 
